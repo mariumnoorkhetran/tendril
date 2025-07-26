@@ -39,3 +39,11 @@ class Forum:
 
     def get_all_posts(self):
         return self.posts
+from tendril_backend.groq_utils import rewrite_compassionate
+
+def sanitize_text(text):
+    for word in banned_words:
+        if word in text:
+            return rewrite_compassionate(text)
+    return text
+        
