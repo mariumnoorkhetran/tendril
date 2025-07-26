@@ -33,3 +33,18 @@ st.write(f"🔥 Current Streak: {user_data['streak']} {'(Paused)' if user_data['
 if user_data["paused"]:
     st.info("💡 You didn’t do a task yesterday — and that’s okay.")
     st.success(f"Try this encouragement: {generate_affirmation()}")
+import os
+
+def save_data():
+    with open("user_data.json", "w") as f:
+        json.dump(st.session_state.user_data, f, indent=2)
+
+if st.button("💾 Save My Progress"):
+    save_data()
+    st.success("Progress saved!")
+
+# Optional: Load on start
+if os.path.exists("user_data.json") and st.button("📂 Load Previous Session"):
+    with open("user_data.json", "r") as f:
+        st.session_state.user_data = json.load(f)
+    
