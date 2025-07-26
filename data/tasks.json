@@ -1,0 +1,38 @@
+[
+  {
+    "text": "Brush Teeth",
+    "completed": true
+  },
+  {
+    "text": "Take a Shower",
+    "completed": true
+  },
+  {
+    "text": "Do Laundry",
+    "completed": true
+  },
+  {
+    "text": "Change Bed Sheets",
+    "completed": true
+  },
+  {
+    "text": "Clean Your Room",
+    "completed": true
+  },
+  {
+    "text": "Take out trash",
+    "completed": true
+  },
+  {
+    "text": "Tidy up bed",
+    "completed": true
+  },
+  {
+    "text": "random task",
+    "completed": false
+  },
+  {
+    "text": "brush teeth",
+    "completed": false
+  }
+]
