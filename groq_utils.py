@@ -1,10 +1,9 @@
 import os
 from groq import Groq
 
-GROQ_API_KEY = os.environ("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")
-if not GROQ_API_KEY:
-    raise ValueError("GROQ_API_KEY is not set. Please check your environment variables.")
-client = Groq(GROQ_API_KEY)
+client = Groq(
+    api_key=os.environ.get("GROQ_API_KEY"),
+)
 
 def generate_affirmation():
     prompt = "Generate a short, kind affirmation (1 sentence max) for someone struggling with basic hygiene."
