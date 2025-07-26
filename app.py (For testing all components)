@@ -18,3 +18,96 @@ if __name__ == '__main__':
     forum.star_post(0)
     forum.bookmark_post(0)
     print("Forum Posts:", forum.get_all_posts())
+from flask import Flask, request, jsonify
+import os
+import json
+from datetime import datetime, timedelta
+from groq import Groq
+from forum import Forum, sanitize_text
+from streak_logic import update_streak
+from groq_utils import generate_affirmation
+
+app = Flask(__name__)
+
+data_store = {
+    "users": {},
+    "tasks": {},
+}
+
+forum = Forum()
+
+# Load and Save JSON logic
+def save_data():
+    with open("data.json", "w") as f:
+        json.dump(data_store, f, indent=2)
+
+def load_data():
+    global data_store
+    try:
+        with open("data.json", "r") as f:
+            data_store = json.load(f)
+    except FileNotFoundError:
+        pass
+
+load_data()
+
+@app.route("/user/<username>", methods=["GET"])
+def get_user(username):
+    user = data_store["users"].get(username)
+    if not user:
+        # Create user if not exists
+        data_store["users"][username] = {
+            "last_completed_date": str(datetime.today().date()),
+            "streak": 0,
+            "paused": False
+        }
+        user = data_store["users"][username]
+        save_data()
+    return jsonify(user)
+
+@app.route("/user/<username>/streak", methods=["GET"])
+def user_streak(username):
+    user = data_store["users"].get(username)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    updated = update_streak(user)
+    data_store["users"][username] = updated
+    save_data()
+    return jsonify(updated)
+
+@app.route("/tasks/<username>", methods=["GET"])
+def get_tasks(username):
+    return jsonify(data_store["tasks"].get(username, []))
+
+@app.route("/tasks/<username>", methods=["POST"])
+def create_task(username):
+    task = request.json.get("task")
+    status = request.json.get("status", "incomplete")
+    if username not in data_store["tasks"]:
+        data_store["tasks"][username] = []
+    data_store["tasks"][username].append({"task": task, "status": status})
+    save_data()
+    return jsonify({"message": "Task added"})
+
+@app.route("/forum/posts", methods=["GET"])
+def get_forum_posts():
+    return jsonify(forum.get_all_posts())
+
+@app.route("/forum/posts", methods=["POST"])
+def submit_forum_post():
+    content = request.json.get("content")
+    if not content:
+        return jsonify({"error": "Post content required"}), 400
+    post = forum.submit_post(content)
+    return jsonify(post)
+
+@app.route("/affirmation", methods=["GET"])
+def get_affirmation():
+    try:
+        affirmation = generate_affirmation()
+        return jsonify({"affirmation": affirmation})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True)
