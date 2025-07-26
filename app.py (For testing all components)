@@ -23,6 +23,90 @@ import os
 import json
 from datetime import datetime, timedelta
 from groq import Groq
+# tendril_backend/app.py
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from datetime import datetime, timedelta
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from models import Base, User, Task
+from forum import forum_instance
+from groq_utils import generate_affirmation
+
+app = Flask(__name__)
+CORS(app)
+
+# Database setup
+engine = create_engine('sqlite:///database.db')
+Base.metadata.create_all(engine)
+Session = sessionmaker(bind=engine)
+
+@app.route("/user/<username>")
+def get_user(username):
+    session = Session()
+    user = session.query(User).filter_by(username=username).first()
+    if not user:
+        user = User(username=username, last_completed_date=None, streak=0, paused=False)
+        session.add(user)
+        session.commit()
+    return jsonify({
+        "username": user.username,
+        "last_completed_date": str(user.last_completed_date),
+        "streak": user.streak,
+        "paused": user.paused
+    })
+
+@app.route("/user/<username>/streak")
+def update_streak(username):
+    session = Session()
+    user = session.query(User).filter_by(username=username).first()
+    today = datetime.today().date()
+    yesterday = today - timedelta(days=1)
+
+    if user.last_completed_date == today:
+        pass
+    elif user.last_completed_date == yesterday:
+        user.streak += 1
+        user.paused = False
+    else:
+        user.paused = True
+
+    user.last_completed_date = today
+    session.commit()
+    return jsonify({"streak": user.streak, "paused": user.paused})
+
+@app.route("/tasks/<username>", methods=["GET", "POST"])
+def handle_tasks(username):
+    session = Session()
+    if request.method == "POST":
+        data = request.json
+        task = Task(username=username, description=data["description"], completed=False)
+        session.add(task)
+        session.commit()
+        return jsonify({"status": "created"})
+    else:
+        tasks = session.query(Task).filter_by(username=username).all()
+        return jsonify([
+            {"id": t.id, "description": t.description, "completed": t.completed}
+            for t in tasks
+        ])
+
+@app.route("/forum/posts", methods=["GET", "POST"])
+def handle_forum():
+    if request.method == "POST":
+        data = request.json
+        post = forum_instance.submit_post(data["content"])
+        return jsonify(post)
+    else:
+        return jsonify(forum_instance.get_all_posts())
+
+@app.route("/affirmation")
+def get_affirmation():
+    return jsonify({"affirmation": generate_affirmation()})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
 from forum import Forum, sanitize_text
 from streak_logic import update_streak
 from groq_utils import generate_affirmation
@@ -108,6 +192,89 @@ def get_affirmation():
         return jsonify({"affirmation": affirmation})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True)
+# tendril_backend/app.py
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from datetime import datetime, timedelta
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from models import Base, User, Task
+from forum import forum_instance
+from groq_utils import generate_affirmation
+
+app = Flask(__name__)
+CORS(app)
+
+# Database setup
+engine = create_engine('sqlite:///database.db')
+Base.metadata.create_all(engine)
+Session = sessionmaker(bind=engine)
+
+@app.route("/user/<username>")
+def get_user(username):
+    session = Session()
+    user = session.query(User).filter_by(username=username).first()
+    if not user:
+        user = User(username=username, last_completed_date=None, streak=0, paused=False)
+        session.add(user)
+        session.commit()
+    return jsonify({
+        "username": user.username,
+        "last_completed_date": str(user.last_completed_date),
+        "streak": user.streak,
+        "paused": user.paused
+    })
+
+@app.route("/user/<username>/streak")
+def update_streak(username):
+    session = Session()
+    user = session.query(User).filter_by(username=username).first()
+    today = datetime.today().date()
+    yesterday = today - timedelta(days=1)
+
+    if user.last_completed_date == today:
+        pass
+    elif user.last_completed_date == yesterday:
+        user.streak += 1
+        user.paused = False
+    else:
+        user.paused = True
+
+    user.last_completed_date = today
+    session.commit()
+    return jsonify({"streak": user.streak, "paused": user.paused})
+
+@app.route("/tasks/<username>", methods=["GET", "POST"])
+def handle_tasks(username):
+    session = Session()
+    if request.method == "POST":
+        data = request.json
+        task = Task(username=username, description=data["description"], completed=False)
+        session.add(task)
+        session.commit()
+        return jsonify({"status": "created"})
+    else:
+        tasks = session.query(Task).filter_by(username=username).all()
+        return jsonify([
+            {"id": t.id, "description": t.description, "completed": t.completed}
+            for t in tasks
+        ])
+
+@app.route("/forum/posts", methods=["GET", "POST"])
+def handle_forum():
+    if request.method == "POST":
+        data = request.json
+        post = forum_instance.submit_post(data["content"])
+        return jsonify(post)
+    else:
+        return jsonify(forum_instance.get_all_posts())
+
+@app.route("/affirmation")
+def get_affirmation():
+    return jsonify({"affirmation": generate_affirmation()})
 
 if __name__ == "__main__":
     app.run(debug=True)
