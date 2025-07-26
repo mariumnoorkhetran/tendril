@@ -1,0 +1,20 @@
+from groq_utils import generate_affirmation
+from streak_logic import update_streak
+from forum import Forum
+
+if __name__ == '__main__':
+    # Test Groq API
+    print("Affirmation:", generate_affirmation())
+
+    # Test Streak Update
+    user = {'last_completed_date': '2025-07-25', 'streak': 3, 'paused': False}
+    updated = update_streak(user)
+    print("Updated Streak:", updated)
+
+    # Test Forum
+    forum = Forum()
+    forum.submit_post("I feel so lazy sometimes...")
+    forum.add_comment(0, "Try breaking it down!")
+    forum.star_post(0)
+    forum.bookmark_post(0)
+    print("Forum Posts:", forum.get_all_posts())
