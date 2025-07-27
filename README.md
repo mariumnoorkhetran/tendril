@@ -28,7 +28,7 @@ For people struggling with mental health issues or chronic pain, maintaining hyg
 | Backend    | Python (FastAPI), Groq API |
 | Hosting    | Vercel (frontend), Railway (backend) |
 | AI Tools   | Groq LLM, Cursor IDE, ChatGPT |
-| Storage    | JSON file |
+| Database    | JSON file |
 
 ---
 
