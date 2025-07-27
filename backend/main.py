@@ -24,23 +24,36 @@ frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 # Create list of allowed origins
 allowed_origins = [
     "http://localhost:3000",  # Next.js dev server (local development)
+    "https://localhost:3000",  # HTTPS local development
 ]
 
 # Add production frontend URL if provided
 if frontend_url and frontend_url != "http://localhost:3000":
+    # Remove trailing slash for consistency
+    clean_frontend_url = frontend_url.rstrip('/')
     allowed_origins.extend([
-        frontend_url,
-        f"{frontend_url}/",  # Add with trailing slash
+        clean_frontend_url,
+        f"{clean_frontend_url}/",  # Add with trailing slash
+    ])
+
+# Add Vercel preview URLs if in development/preview mode
+vercel_url = os.environ.get("VERCEL_URL")
+if vercel_url:
+    allowed_origins.extend([
+        f"https://{vercel_url}",
+        f"https://{vercel_url}/",
     ])
 
 print(f"Allowed origins: {allowed_origins}")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=False,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=86400,  # Cache preflight requests for 24 hours
 )
 
 # Simple Rate Limiter for Compassionate Rewriter
