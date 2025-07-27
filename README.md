@@ -6,7 +6,7 @@
 
 ## Problem
 
-For people struggling with mental health issues or chronic pain, maintaining hygiene tasks like brushing teeth, showering, doing laundry and dishes regularly can become overwhelming and impossible. Most habit-tracking apps use methods that trigger stress and shame in users. There is need for systems that help people develop hygiene habits through compassion and kindness.
+For people struggling with mental health issues or chronic pain, maintaining hygiene tasks like brushing teeth, showering, and doing the dishes regularly can become overwhelming and impossible. Most habit-tracking apps use rigid methods that trigger stress and shame in users. There is a growing need for systems that help people develop hygiene habits through compassion and kindness.
 
 ---
 
@@ -22,7 +22,7 @@ For people struggling with mental health issues or chronic pain, maintaining hyg
 
 ## Features
 
-- Pastel-themed hygiene checklist with emojis
+- Pastel-themed hygiene checklist
 - Streak tracker that **pauses**, not punishes
 - Daily “Tip of the Day” affirmation via AI
 - Anonymous post and comment board
@@ -61,10 +61,10 @@ For people struggling with mental health issues or chronic pain, maintaining hyg
 
 ## Team
 
-- [[Abdullah Khetran](https://github.com/abdullahkhetran) — Frontend, UI/UX
-- [Name] — Backend, Logic
-- [Name] — Deployment
-- [Name] — Presentation
+- [Abdullah Khetran](https://github.com/abdullahkhetran) — Frontend, UI/UX
+- [Yaqoot Gohar Khan](https://github.com/YaqootGKhan) — Backend, Logic
+- [Marium Noor Khetran](https://github.com/mariumnoorkhetran) — Deployment
+- [Hafiz Muhammad Bilal](https://github.com/Hafiz331) — Presentation
 
 ---
 
