@@ -41,7 +41,7 @@ export default function Home() {
         {/* Quick Overview */}
         <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
           <h2 className="text-2xl font-semibold text-gray mb-4">
-            Quick Overview
+           About Tendril
           </h2>
           <p className="text-gray">
             Manage your tasks, track your calendar, and connect with the community through our forum.
