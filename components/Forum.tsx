@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { api, ForumPost, Tip } from "../lib/api";
 import { getUserId } from "../lib/utils";
@@ -28,6 +28,20 @@ export default function Forum() {
     max_requests: number;
     window_seconds: number;
   } | null>(null);
+
+  // Add state for tip AI suggestion
+  const [tipShowRewritingSuggestion, setTipShowRewritingSuggestion] = useState(false);
+  const [tipRewrittenContent, setTipRewrittenContent] = useState("");
+  const [tipAnalyzingContent, setTipAnalyzingContent] = useState(false);
+  const [tipUseRewrittenContent, setTipUseRewrittenContent] = useState(false);
+
+  // Add state for tip notification toast
+  const [tipNotification, setTipNotification] = useState<string | null>(null);
+  const tipNotificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Add state for post notification toast
+  const [postNotification, setPostNotification] = useState<string | null>(null);
+  const postNotificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load posts from backend
   const loadPosts = async (myPostsOnly = false) => {
@@ -147,7 +161,9 @@ export default function Forum() {
       setSuggestedTitle("");
       setSuggestedContent("");
       setRateLimitInfo(null);
-      setActiveTab("all-posts"); // Switch to all posts tab to show the new post
+      setPostNotification('Post submitted');
+      if (postNotificationTimeoutRef.current) clearTimeout(postNotificationTimeoutRef.current);
+      postNotificationTimeoutRef.current = setTimeout(() => setPostNotification(null), 3500);
     } catch (error: any) {
       console.error('Failed to create post:', error);
       
@@ -164,35 +180,45 @@ export default function Forum() {
     }
   };
 
-  // Create new tip
+  // Update createTip to use AI suggestion flow
   const createTip = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!newTipContent.trim()) {
       alert('Please fill in the tip content');
       return;
     }
-
     try {
       setSubmittingTip(true);
-      const newTip = await api.createTip({
+      setTipAnalyzingContent(true);
+      // Call backend to get AI suggestion (always runs Groq now)
+      const response = await api.createTip({
         content: newTipContent,
         author: "Community Member",
         category: "Wellness",
         likes: 0,
         is_featured: false,
       });
-      
-      // Reset form
-      setNewTipContent("");
-      
-      alert('Tip submitted successfully! It will be reviewed and may appear on the homepage.');
+      setTipAnalyzingContent(false);
+      // If content was rewritten, show suggestion
+      if (response.content !== newTipContent) {
+        setTipRewrittenContent(response.content);
+        setTipShowRewritingSuggestion(true);
+        setTipUseRewrittenContent(false);
+      } else {
+        setTipShowRewritingSuggestion(false);
+        setTipRewrittenContent("");
+        setTipUseRewrittenContent(false);
+        setNewTipContent("");
+        setTipNotification('Tip submitted successfully! It may appear on the homepage.');
+        if (tipNotificationTimeoutRef.current) clearTimeout(tipNotificationTimeoutRef.current);
+        tipNotificationTimeoutRef.current = setTimeout(() => setTipNotification(null), 3500);
+      }
     } catch (error) {
-      console.error('Failed to create tip:', error);
-      alert('Failed to submit tip. Please try again.');
-    } finally {
+      setTipAnalyzingContent(false);
       setSubmittingTip(false);
+      alert('Failed to submit tip. Please try again.');
     }
+    setSubmittingTip(false);
   };
 
   // React to a post
@@ -242,6 +268,13 @@ export default function Forum() {
   useEffect(() => {
     loadPosts();
   }, []);
+
+  // Sort posts by created_at descending before rendering
+  const sortedPosts = [...posts].sort((a, b) => {
+    if (!a.created_at) return 1;
+    if (!b.created_at) return -1;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 
   return (
     <div className="m-8 max-w-5xl mx-auto">
@@ -462,22 +495,85 @@ export default function Forum() {
                   <textarea
                     placeholder="Write your wellness tip here..."
                     value={newTipContent}
-                    onChange={(e) => setNewTipContent(e.target.value)}
+                    onChange={(e) => {
+                      setNewTipContent(e.target.value);
+                      setTipShowRewritingSuggestion(false);
+                      setTipRewrittenContent("");
+                      setTipUseRewrittenContent(false);
+                    }}
                     rows={6}
                     className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
                     required
                   />
                 </div>
-                <button 
+                {tipAnalyzingContent && (
+                  <div className="mt-2 text-sm text-gray-600 flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#af5f5f] mr-2"></div>
+                    Analyzing content for community guidelines...
+                  </div>
+                )}
+                {tipShowRewritingSuggestion && (
+                  <div className="bg-[#fef7f0] border border-[#af5f5f] rounded-lg p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#af5f5f] text-lg">💝</span>
+                      <h4 className="font-semibold text-gray">Compassionate Suggestion</h4>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      We noticed some critical language in your tip. To create a supportive community, please either:
+                    </p>
+                    <div className="bg-white rounded-lg p-3 border">
+                      <p className="text-gray-700 text-sm whitespace-pre-wrap">{tipRewrittenContent}</p>
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTipUseRewrittenContent(true);
+                          setNewTipContent(tipRewrittenContent);
+                          setTipShowRewritingSuggestion(false);
+                          setTipRewrittenContent("");
+                          setTipUseRewrittenContent(false);
+                          setNewTipContent("");
+                          setTipNotification('Tip submitted successfully! It may appear on the homepage.');
+                          if (tipNotificationTimeoutRef.current) clearTimeout(tipNotificationTimeoutRef.current);
+                          tipNotificationTimeoutRef.current = setTimeout(() => setTipNotification(null), 3500);
+                        }}
+                        className={`px-4 py-2 rounded-lg transition-colors text-sm cursor-pointer bg-green-600 text-white`}
+                      >
+                        ✓ Use This Version
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTipShowRewritingSuggestion(false);
+                          setTipUseRewrittenContent(false);
+                        }}
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors text-sm cursor-pointer"
+                      >
+                        Edit Original
+                      </button>
+                    </div>
+                    <div className="text-xs text-gray-500 bg-yellow-50 p-2 rounded">
+                      💡 <strong>Note:</strong> You must either use the compassionate version above or edit your message to remove negative words before submitting.
+                    </div>
+                  </div>
+                )}
+                <button
                   type="submit"
-                  disabled={submittingTip}
+                  disabled={submittingTip || tipAnalyzingContent || tipShowRewritingSuggestion}
                   className={`px-6 py-2 rounded-lg transition-colors ${
-                    submittingTip 
-                      ? 'bg-gray-400 cursor-not-allowed' 
+                    submittingTip || tipAnalyzingContent || tipShowRewritingSuggestion
+                      ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-[#af5f5f] hover:bg-[#af5f5f]/90'
                   } text-white cursor-pointer`}
                 >
-                  {submittingTip ? 'Submitting...' : 'Submit Tip'}
+                  {tipAnalyzingContent
+                    ? 'Analyzing Content...'
+                    : submittingTip
+                    ? 'Submitting...'
+                    : tipShowRewritingSuggestion
+                    ? 'Please Choose Version First'
+                    : 'Submit Tip'}
                 </button>
               </form>
             </div>
@@ -490,7 +586,7 @@ export default function Forum() {
               </div>
               {loading ? (
                 <p className="text-gray">Loading posts...</p>
-              ) : posts.length === 0 ? (
+              ) : sortedPosts.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">You haven't created any posts yet.</p>
                   <button 
@@ -502,7 +598,7 @@ export default function Forum() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {posts.map((post) => (
+                  {sortedPosts.map((post) => (
                     <div key={post.id} className="border border-gray-400 rounded-lg p-4 transition-colors">
                       <h4 className="font-semibold text-gray mb-2">{post.title}</h4>
                       <p className="text-gray-600 text-sm mb-3">
@@ -554,7 +650,7 @@ export default function Forum() {
               <h3 className="text-xl font-semibold text-gray mb-4">All Posts</h3>
               {loading ? (
                 <p className="text-gray">Loading posts...</p>
-              ) : posts.length === 0 ? (
+              ) : sortedPosts.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">No posts available yet.</p>
                   <button 
@@ -566,7 +662,7 @@ export default function Forum() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {posts.map((post) => (
+                  {sortedPosts.map((post) => (
                     <div key={post.id} className="border border-gray-400 rounded-lg p-4 transition-colors">
                       <h4 className="font-semibold text-gray mb-2">{post.title}</h4>
                       <p className="text-gray-600 text-sm mb-3">
@@ -614,6 +710,16 @@ export default function Forum() {
           )}
         </div>
       </div>
+      {tipNotification && (
+        <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg bg-green-200 text-green-900 text-lg font-semibold shadow-lg animate-fade-in">
+          <span role="img" aria-label="celebrate">🥳</span> {tipNotification}
+        </div>
+      )}
+      {postNotification && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg bg-green-200 text-green-900 text-lg font-semibold shadow-lg animate-fade-in">
+          <span role="img" aria-label="check">✅</span> {postNotification}
+        </div>
+      )}
     </div>
   );
 }

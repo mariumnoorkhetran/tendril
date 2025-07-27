@@ -362,11 +362,14 @@ async def get_random_tip():
 
 @app.post("/api/tips", response_model=Tip)
 async def create_tip(tip: Tip):
-    """Create a new tip"""
+    """Create a new tip, using Groq API for compassionate rewriting if needed"""
     tip.id = str(uuid.uuid4())
     tip.created_at = datetime.now()
+    # Analyze tip content for negative words and suggest compassionate rewriting
+    analysis = compassionate_rewriter.analyze_and_suggest_rewrite(tip.content)
+    if analysis.get('contains_negative_words') and analysis.get('suggestion_available') and analysis.get('rewritten_text'):
+        tip.content = analysis['rewritten_text']
     data_manager.save_tip(tip.model_dump())
-    
     return tip
 
 # Forum endpoints

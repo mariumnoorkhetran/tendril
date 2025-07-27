@@ -70,5 +70,41 @@
     "comments_count": 0,
     "reactions_count": 0,
     "user_reacted": false
+  },
+  {
+    "id": "276921be-c759-43b7-a041-2cbf3aa2c61d",
+    "title": "Changing sleeping mattress was a good idea",
+    "content": "I recently changed my sleeping mattress and now I sleep more comfortably ",
+    "user_id": "user_249ks2lp2",
+    "author": null,
+    "category": null,
+    "created_at": "2025-07-27T20:52:02.720972",
+    "comments_count": 0,
+    "reactions_count": 0,
+    "user_reacted": false
+  },
+  {
+    "id": "12a718cb-bc7a-4db2-9a47-eca71a6e7e6b",
+    "title": "Brushing teeth daily really helps",
+    "content": "I have recently started brushing my teeth daily and it has been a game changer",
+    "user_id": "user_249ks2lp2",
+    "author": null,
+    "category": null,
+    "created_at": "2025-07-27T20:53:43.232564",
+    "comments_count": 0,
+    "reactions_count": 0,
+    "user_reacted": false
+  },
+  {
+    "id": "e64d885f-27a7-4cc5-91f2-aebb211937cc",
+    "title": "Sleeping early helps",
+    "content": "Even though I get the same hours of sleep but the quality has improved",
+    "user_id": "user_249ks2lp2",
+    "author": null,
+    "category": null,
+    "created_at": "2025-07-27T20:56:11.423632",
+    "comments_count": 0,
+    "reactions_count": 0,
+    "user_reacted": false
   }
 ]
