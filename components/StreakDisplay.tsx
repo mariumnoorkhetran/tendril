@@ -31,7 +31,7 @@ export default function StreakDisplay({ refreshKey = 0 }: StreakDisplayProps) {
 
   if (loading) {
     return (
-      <div className="bg-[#f9e4bc] rounded-lg p-4 shadow-sm">
+      <div className="bg-[#f3c8dd] rounded-lg p-4 shadow-sm">
         <div className="animate-pulse">
           <div className="h-3 bg-gray-200 rounded w-1/3 mb-3"></div>
           <div className="h-6 bg-gray-200 rounded w-1/2 mb-2"></div>
@@ -43,7 +43,7 @@ export default function StreakDisplay({ refreshKey = 0 }: StreakDisplayProps) {
 
   if (!streak) {
     return (
-      <div className="bg-[#f9e4bc] rounded-lg p-4 shadow-sm">
+      <div className="bg-[#f3c8dd] rounded-lg p-4 shadow-sm">
         <p className="text-gray-500 text-sm">Unable to load streak data</p>
       </div>
     );
@@ -64,7 +64,7 @@ export default function StreakDisplay({ refreshKey = 0 }: StreakDisplayProps) {
   const status = getStreakStatus();
 
   return (
-    <div className="bg-[#f9e4bc] rounded-lg p-3 shadow-sm">
+    <div className="bg-[#f3c8dd] rounded-lg p-3 shadow-sm">
       <h2 className="text-base font-semibold text-gray mb-2">Your Streak</h2>
       
       <div className="space-y-2">

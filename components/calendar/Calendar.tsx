@@ -58,7 +58,7 @@ export default function Calendar() {
   return (
     <div className="m-8 max-w-5xl mx-auto">
       {/* Header Section */}
-      <div className="text-gray mb-8">
+      <div className="text-[#4b1535] mb-8">
         <h1 className="text-4xl font-bold">Calendar</h1>
         <p className="text-lg text-gray mt-2">
           View your tasks for any date. Select a date to see what's planned.
@@ -66,7 +66,7 @@ export default function Calendar() {
       </div>
 
       {/* Calendar Content */}
-      <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
+      <div className="bg-[#f3c8dd] rounded-lg p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-semibold text-gray">
             {selectedDate ? `Tasks for ${format(selectedDate, 'MMMM d, yyyy')}` : 'Select a Date to view tasks'}
@@ -77,7 +77,7 @@ export default function Calendar() {
               <Button 
                 variant="outline" 
                 onClick={() => handleDateSelect(undefined)}
-                className="text-gray-600"
+                className="text-white bg-[#795663] hover:bg-[#795663]/90 hover:text-white"
               >
                 Clear
               </Button>
@@ -94,18 +94,18 @@ export default function Calendar() {
         {!loading && selectedDate && calendarData && (
           <div>
             {/* Completion Statistics */}
-            <div className="bg-blue-50 rounded-lg p-4 mb-6">
+              <div className="bg-[#f2e0d2] rounded-lg p-4 mb-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div>
-                  <div className="text-2xl font-bold text-blue-600">{calendarData.total_count}</div>
+                  <div className="text-2xl font-bold text-[#795663]">{calendarData.total_count}</div>
                   <div className="text-sm text-gray-600">Total Tasks</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-green-600">{calendarData.completed_count}</div>
+                  <div className="text-2xl font-bold text-[#795663]">{calendarData.completed_count}</div>
                   <div className="text-sm text-gray-600">Completed</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-purple-600">{calendarData.completion_rate.toFixed(1)}%</div>
+                  <div className="text-2xl font-bold text-[#795663]">{calendarData.completion_rate.toFixed(1)}%</div>
                   <div className="text-sm text-gray-600">Completion Rate</div>
                 </div>
               </div>
@@ -121,15 +121,13 @@ export default function Calendar() {
                 <h3 className="text-lg font-semibold text-gray mb-3">Task List</h3>
                 <ul className="space-y-3">
                   {calendarData.tasks.map((task) => (
-                    <li key={task.id} className={`text-gray flex items-center justify-between p-4 rounded-lg border ${
-                      task.completed ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
-                    }`}>
+                    <li key={task.id} className={`text-gray bg-[#f2e0d2] flex items-center justify-between p-4 rounded-lg border `}>
                       <div className="flex items-center flex-1">
                         <button
                           onClick={() => toggleTaskCompletion(task)}
                           className={`w-5 h-5 rounded mr-3 flex items-center justify-center cursor-pointer ${
                             task.completed 
-                              ? 'bg-green-500 hover:bg-green-600' 
+                              ? 'bg-[#795663] hover:bg-[#795663]/60' 
                               : 'border-2 border-gray-600 hover:border-gray-400'
                           }`}
                         >

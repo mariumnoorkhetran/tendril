@@ -30,7 +30,7 @@ export default function TipsCard() {
 
   if (loading) {
     return (
-      <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
+      <div className="bg-[#f3c8dd] rounded-lg p-6 shadow-sm">
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
           <div className="h-6 bg-gray-200 rounded w-2/3 mb-2"></div>
@@ -43,7 +43,7 @@ export default function TipsCard() {
 
   if (error || !tip) {
     return (
-      <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
+      <div className="bg-[#f3c8dd] rounded-lg p-6 shadow-sm">
         <div className="text-center">
           <p className="text-gray-500 mb-4">{error || 'No tip available'}</p>
           <button
@@ -58,12 +58,12 @@ export default function TipsCard() {
   }
 
   return (
-    <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
+    <div className="bg-[#f3c8dd] rounded-lg p-6 shadow-sm">
       <div className="flex justify-between items-start mb-4">
         <h2 className="text-2xl font-semibold text-gray">Hot Tips From Community</h2>
         <button
           onClick={loadRandomTip}
-          className="bg-[#af5f5f] hover:bg-[#af5f5f]/90 text-white px-4 py-2 rounded-md text-sm font-medium hover:cursor-pointer"
+          className="bg-[#795663] hover:bg-[#795663]/90 text-white px-4 py-2 rounded-md text-sm font-medium hover:cursor-pointer"
         >
           New Tip
         </button>

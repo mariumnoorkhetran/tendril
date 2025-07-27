@@ -80,10 +80,10 @@ export default function PostPage() {
 
   if (loading) {
     return (
-      <div className="bg-pink min-h-screen">
+      <div className="bg-[#f2e0d2] min-h-screen">
         <Navbar />
         <div className="m-8 max-w-5xl mx-auto">
-          <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
+          <div className="bg-[#f3c8dd] rounded-lg p-6 shadow-sm">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-300 rounded mb-4"></div>
               <div className="h-4 bg-gray-300 rounded mb-2"></div>
@@ -99,16 +99,16 @@ export default function PostPage() {
 
   if (error || !post) {
     return (
-      <div className="bg-pink min-h-screen">
+      <div className="bg-[#f2e0d2] min-h-screen">
         <Navbar />
         <div className="m-8 max-w-5xl mx-auto">
-          <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
+          <div className="bg-[#f3c8dd] rounded-lg p-6 shadow-sm">
             <div className="text-center py-8">
               <h1 className="text-2xl font-bold text-gray mb-4">Post Not Found</h1>
               <p className="text-gray-600 mb-6">{error || 'The post you are looking for does not exist.'}</p>
               <Link 
                 href="/forum"
-                className="bg-[#af5f5f] text-white px-6 py-2 rounded-lg hover:bg-[#af5f5f]/90 transition-colors cursor-pointer"
+                className="bg-[#795663] text-white px-6 py-2 rounded-lg hover:bg-[#795663]/90 transition-colors cursor-pointer"
               >
                 Back to Forum
               </Link>
@@ -120,14 +120,14 @@ export default function PostPage() {
   }
 
   return (
-    <div className="bg-pink min-h-screen">
+    <div className="bg-[#f2e0d2] min-h-screen">
       <Navbar />
       <div className="m-8 max-w-5xl mx-auto">
         {/* Back Button */}
         <div className="mb-4">
           <Link 
             href="/forum"
-            className="inline-flex items-center text-[#af5f5f] hover:text-[#af5f5f]/80 transition-colors cursor-pointer"
+            className="inline-flex items-center text-[#795663] hover:text-[#795663]/80 transition-colors cursor-pointer"
           >
             <span className="mr-2">←</span>
             Back to Forum
@@ -135,15 +135,15 @@ export default function PostPage() {
         </div>
 
         {/* Post Content */}
-        <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
+        <div className="bg-[#f3c8dd] rounded-lg p-6 shadow-sm">
           {/* Post Header */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray mb-2">{post.title}</h1>
+            <h1 className="text-3xl font-semibold text-gray mb-2">{post.title}</h1>
             <div className="flex items-center justify-between text-sm text-gray-600">
               <div className="flex items-center gap-4">
                 <span>{post.created_at ? formatDate(post.created_at) : 'Just posted'}</span>
                 {post.category && (
-                  <span className="bg-[#af5f5f] text-white px-2 py-1 rounded text-xs">
+                  <span className="bg-[#795663] text-white px-2 py-1 rounded text-xs">
                     {post.category}
                   </span>
                 )}
@@ -159,7 +159,7 @@ export default function PostPage() {
           </div>
 
           {/* Post Actions */}
-          <div className="flex items-center gap-6 pt-4 border-t border-gray-300">
+          <div className="flex items-center gap-6 pt-4 border-t border-gray-500">
             <button
               onClick={handleReaction}
               className="flex items-center gap-2 hover:text-yellow-500 transition-colors group cursor-pointer"
@@ -167,12 +167,12 @@ export default function PostPage() {
               <span className={`text-xl ${post.user_reacted ? "text-yellow-500" : "text-gray-400"} group-hover:text-yellow-500 transition-colors`}>
                 {post.user_reacted ? "⭐" : "☆"}
               </span>
-              <span className="group-hover:text-yellow-500 transition-colors text-[#af5f5f]">
+              <span className="group-hover:text-yellow-500 transition-colors text-[#795663]">
                 {post.reactions_count || 0} {post.reactions_count === 1 ? 'reaction' : 'reactions'}
               </span>
             </button>
             
-            <div className="flex items-center gap-2 text-[#af5f5f]">
+            <div className="flex items-center gap-2 text-[#795663]">
               <span className="text-gray-400">💬</span>
               <span>{post.comments_count || 0} {post.comments_count === 1 ? 'comment' : 'comments'}</span>
             </div>
@@ -180,7 +180,7 @@ export default function PostPage() {
         </div>
 
         {/* Comments Section */}
-        <div className="mt-6 bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
+        <div className="mt-6 bg-[#f3c8dd] rounded-lg p-6 shadow-sm">
           <Comments postId={postId} />
         </div>
       </div>

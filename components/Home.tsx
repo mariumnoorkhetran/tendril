@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <div className="m-8 max-w-5xl mx-auto">
       {/* Header Section */}
-      <div className="text-gray mb-8">
+      <div className="text-[#4b1535] mb-8">
         <h1 className="text-4xl font-bold">
           Home
         </h1>
@@ -39,7 +39,7 @@ export default function Home() {
         <TipsCard />
         
         {/* Quick Overview */}
-        <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
+        <div className="bg-[#f3c8dd] rounded-lg p-6 shadow-sm">
           <h2 className="text-2xl font-semibold text-gray mb-4">
            About Tendril
           </h2>

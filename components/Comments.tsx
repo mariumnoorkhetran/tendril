@@ -178,8 +178,8 @@ function CommentItem({ comment, postId, onCommentAdded, level = 0 }: CommentItem
   }, [comment.replies_count]);
 
   return (
-    <div className={`${level > 0 ? 'ml-6 border-l-2 border-[#af5f5f] pl-4' : ''}`}>
-      <div className="bg-[#fef7f0] rounded-lg p-4 mb-3 shadow-sm">
+    <div className={`${level > 0 ? 'ml-6 border-l-2 border-[#795663] pl-4' : ''}`}>
+      <div className="bg-[#f2e0d2] rounded-lg p-4 mb-3 shadow-sm">
         {/* Comment Header */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -203,14 +203,14 @@ function CommentItem({ comment, postId, onCommentAdded, level = 0 }: CommentItem
             <span className={`${comment.user_reacted ? "text-yellow-500" : "text-gray-400"} group-hover:text-yellow-500 transition-colors`}>
               {comment.user_reacted ? "⭐" : "☆"}
             </span>
-            <span className="group-hover:text-yellow-500 transition-colors text-[#af5f5f]">
+            <span className="group-hover:text-yellow-500 transition-colors text-[#795663]">
               {comment.reactions_count || 0} {(comment.reactions_count || 0) === 1 ? 'reaction' : 'reactions'}
             </span>
           </button>
 
           <button
             onClick={() => setShowReplyForm(!showReplyForm)}
-            className="text-[#af5f5f] hover:text-[#af5f5f]/80 transition-colors cursor-pointer"
+            className="text-[#795663] hover:text-[#795663]/80 transition-colors cursor-pointer"
           >
             Reply
           </button>
@@ -218,7 +218,7 @@ function CommentItem({ comment, postId, onCommentAdded, level = 0 }: CommentItem
           {comment.replies_count && comment.replies_count > 0 ? (
             <button
               onClick={() => setShowReplies(!showReplies)}
-              className="text-[#af5f5f] hover:text-[#af5f5f]/80 transition-colors cursor-pointer"
+              className="text-[#795663] hover:text-[#795663]/80 transition-colors cursor-pointer"
             >
               {showReplies ? 'Hide' : 'Show'} {comment.replies_count} {comment.replies_count === 1 ? 'reply' : 'replies'}
             </button>
@@ -243,14 +243,14 @@ function CommentItem({ comment, postId, onCommentAdded, level = 0 }: CommentItem
               }}
               placeholder="Write your reply..."
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#af5f5f] focus:border-[#af5f5f] resize-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#795663] focus:border-[#795663] resize-none"
               required
             />
             
             {/* Analysis status - only show when analyzing during publish */}
             {analyzingContent && (
               <div className="mt-2 text-sm text-gray-600 flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#af5f5f] mr-2"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#795663] mr-2"></div>
                 Analyzing content for community guidelines...
               </div>
             )}
@@ -270,9 +270,9 @@ function CommentItem({ comment, postId, onCommentAdded, level = 0 }: CommentItem
 
             {/* Compassionate Rewriting Suggestion */}
             {showRewritingSuggestion && (
-              <div className="bg-[#fef7f0] border border-[#af5f5f] rounded-lg p-3 mt-3 space-y-2">
+              <div className="bg-[#f2e0d2] border border-[#795663] rounded-lg p-3 mt-3 space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-[#af5f5f] text-sm">💝</span>
+                  <span className="text-[#795663] text-sm">💝</span>
                   <h4 className="font-semibold text-gray text-sm">Compassionate Suggestion</h4>
                   <div className="relative group">
                     <span className="text-gray-400 text-xs cursor-help">ℹ️</span>
@@ -298,7 +298,7 @@ function CommentItem({ comment, postId, onCommentAdded, level = 0 }: CommentItem
                     className={`px-3 py-1 rounded-lg transition-colors text-xs cursor-pointer ${
                       useRewrittenContent 
                         ? 'bg-green-600 text-white' 
-                        : 'bg-[#af5f5f] text-white hover:bg-[#af5f5f]/90'
+                        : 'bg-[#795663] text-white hover:bg-[#795663]/90'
                     }`}
                   >
                     {useRewrittenContent ? '✓ Using This Version' : 'Use This Version'}
@@ -342,7 +342,7 @@ function CommentItem({ comment, postId, onCommentAdded, level = 0 }: CommentItem
                     ? 'bg-gray-400 cursor-not-allowed' 
                     : showRewritingSuggestion && !useRewrittenContent
                     ? 'bg-red-500 cursor-not-allowed'
-                    : 'bg-[#af5f5f] hover:bg-[#af5f5f]/90'
+                    : 'bg-[#795663] hover:bg-[#795663]/90'
                 } text-white`}
               >
                 {analyzingContent 
@@ -378,7 +378,7 @@ function CommentItem({ comment, postId, onCommentAdded, level = 0 }: CommentItem
         <div>
           {loadingReplies ? (
             <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#af5f5f] mx-auto"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#795663] mx-auto"></div>
             </div>
           ) : (
             replies.map((reply) => (
@@ -514,7 +514,7 @@ export default function Comments({ postId }: CommentsProps) {
   return (
     <div className="space-y-6">
       {/* Comment Form */}
-      <div className="bg-[#fef7f0] rounded-lg p-4 shadow-sm">
+      <div className="bg-[#f2e0d2] rounded-lg p-4 shadow-sm">
         <h3 className="text-lg font-semibold text-gray mb-3">Add a Comment</h3>
         <form onSubmit={handleSubmitComment}>
           <textarea
@@ -532,14 +532,14 @@ export default function Comments({ postId }: CommentsProps) {
             }}
             placeholder="Share your thoughts..."
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#af5f5f] focus:border-[#af5f5f] resize-none"
+            className="w-full px-3 py-2 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#795663] focus:border-[#795663] resize-none"
             required
           />
           
           {/* Analysis status - only show when analyzing during publish */}
           {analyzingContent && (
             <div className="mt-2 text-sm text-gray-600 flex items-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#af5f5f] mr-2"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#795663] mr-2"></div>
               Analyzing content for community guidelines...
             </div>
           )}
@@ -559,9 +559,9 @@ export default function Comments({ postId }: CommentsProps) {
 
           {/* Compassionate Rewriting Suggestion */}
           {showRewritingSuggestion && (
-            <div className="bg-[#fef7f0] border border-[#af5f5f] rounded-lg p-4 mt-3 space-y-3">
+            <div className="bg-[#f2e0d2] border border-[#795663] rounded-lg p-4 mt-3 space-y-3">
               <div className="flex items-center gap-2">
-                <span className="text-[#af5f5f] text-lg">💝</span>
+                <span className="text-[#795663] text-lg">💝</span>
                 <h4 className="font-semibold text-gray">Compassionate Suggestion</h4>
                 <div className="relative group">
                   <span className="text-gray-400 text-sm cursor-help">ℹ️</span>
@@ -587,7 +587,7 @@ export default function Comments({ postId }: CommentsProps) {
                   className={`px-4 py-2 rounded-lg transition-colors text-sm cursor-pointer ${
                     useRewrittenContent 
                       ? 'bg-green-600 text-white' 
-                      : 'bg-[#af5f5f] text-white hover:bg-[#af5f5f]/90'
+                      : 'bg-[#795663] text-white hover:bg-[#795663]/90'
                   }`}
                 >
                   {useRewrittenContent ? '✓ Using This Version' : 'Use This Version'}
@@ -630,7 +630,7 @@ export default function Comments({ postId }: CommentsProps) {
                 ? 'bg-gray-400 cursor-not-allowed' 
                 : showRewritingSuggestion && !useRewrittenContent
                 ? 'bg-red-500 cursor-not-allowed'
-                : 'bg-[#af5f5f] hover:bg-[#af5f5f]/90'
+                : 'bg-[#795663] hover:bg-[#795663]/90'
             } text-white`}
           >
             {analyzingContent 
@@ -653,7 +653,7 @@ export default function Comments({ postId }: CommentsProps) {
         
         {loading ? (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#af5f5f] mx-auto"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#795663] mx-auto"></div>
           </div>
         ) : comments.length === 0 ? (
           <div className="text-center py-8">

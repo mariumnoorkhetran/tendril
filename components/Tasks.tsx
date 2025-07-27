@@ -256,12 +256,12 @@ export default function Tasks() {
     <div className="m-8 max-w-5xl mx-auto">
       {/* Affirmation Toast */}
       {affirmation && (
-        <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg bg-green-200 text-green-900 text-lg font-semibold shadow-lg animate-fade-in">
+        <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg bg-[#795663] text-white text-lg font-semibold shadow-lg animate-fade-in">
           <span role="img" aria-label="celebrate">🥳</span> {affirmation}
         </div>
       )}
       {/* Header Section */}
-      <div className="text-gray mb-8">
+      <div className="text-[#4b1535] mb-8">
         <h1 className="text-4xl font-bold">
           Tasks
         </h1>
@@ -271,7 +271,7 @@ export default function Tasks() {
       </div>
 
       {/* Add New Task Form */}
-      <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm mb-8">
+      <div className="bg-[#f3c8dd] rounded-lg p-6 shadow-sm mb-8">
         <h2 className="text-2xl font-semibold text-gray mb-4">
           Add New Task
         </h2>
@@ -288,7 +288,7 @@ export default function Tasks() {
                 setNewTaskTitle(e.target.value);
                 setTitleError(null); // Clear error when user types
               }}
-              className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 ${
+              className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 bg-[#f2e0d2] ${
                 titleError && hasAttemptedSubmit ? 'border-red-500 bg-red-50' : 'border-gray-600'
               }`}
             />
@@ -312,7 +312,7 @@ export default function Tasks() {
               placeholder="Enter task description"
               value={newTaskDescription}
               onChange={(e) => setNewTaskDescription(e.target.value)}
-              className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+              className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 bg-[#f2e0d2]"
               rows={3}
             />
           </div>
@@ -328,7 +328,7 @@ export default function Tasks() {
                   setNewTaskDueDate(e.target.value);
                   setDateError(null); // Clear error when user selects a date
                 }}
-                className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 ${
+                className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 bg-[#f2e0d2] ${
                   dateError && hasAttemptedSubmit ? 'border-red-500 bg-red-50' : 'border-gray-600'
                 }`}
                 min={getTodayDateString()}
@@ -347,7 +347,7 @@ export default function Tasks() {
               )}
             </div>
             <div className="flex items-end">
-              <Button type="submit" className="bg-[#af5f5f] hover:bg-[#af5f5f]/90 w-full">
+              <Button type="submit" className="bg-[#795663] hover:bg-[#795663]/90 w-full">
                 Add Task
               </Button>
             </div>
@@ -358,7 +358,7 @@ export default function Tasks() {
       {/* Task Lists Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Your To-Do List */}
-        <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
+        <div className="bg-[#f3c8dd] rounded-lg p-6 shadow-sm">
           <h2 className="text-2xl font-semibold text-gray mb-4">
             Your To-Do List ({pendingTasks.length})
           </h2>
@@ -369,7 +369,7 @@ export default function Tasks() {
           ) : (
             <ul className="space-y-3">
               {pendingTasks.map((task) => (
-                <li key={task.id} className="text-gray p-3 bg-gray-50 rounded-md">
+                <li key={task.id} className="text-gray p-3 bg-[#f2e0d2] rounded-md">
                   {editingTaskId === task.id ? (
                     // Edit Form
                     <form onSubmit={updateTask} className="space-y-3">
@@ -385,7 +385,7 @@ export default function Tasks() {
                             setEditTaskTitle(e.target.value);
                             setTitleError(null); // Clear error when user types
                           }}
-                          className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 ${
+                          className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 bg-[#f2e0d2] ${
                             titleError && hasAttemptedSubmit ? 'border-red-500 bg-red-50' : 'border-gray-600'
                           }`}
                         />
@@ -409,7 +409,7 @@ export default function Tasks() {
                           placeholder="Enter task description"
                           value={editTaskDescription}
                           onChange={(e) => setEditTaskDescription(e.target.value)}
-                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 bg-[#f2e0d2]"
                           rows={2}
                         />
                       </div>
@@ -424,7 +424,7 @@ export default function Tasks() {
                             setEditTaskDueDate(e.target.value);
                             setDateError(null); // Clear error when user selects a date
                           }}
-                          className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 ${
+                          className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 bg-[#f2e0d2] ${
                             dateError && hasAttemptedSubmit ? 'border-red-500 bg-red-50' : 'border-gray-600'
                           }`}
                           min={getTodayDateString()}
@@ -442,7 +442,7 @@ export default function Tasks() {
                         )}
                       </div>
                       <div className="flex gap-2">
-                        <Button type="submit" className="bg-[#af5f5f] hover:bg-[#af5f5f]/90">
+                        <Button type="submit" className="bg-[#795663] hover:bg-[#795663]/90">
                           Save
                         </Button>
                         <Button 
@@ -499,7 +499,7 @@ export default function Tasks() {
         </div>
 
         {/* Completed Tasks */}
-        <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
+        <div className="bg-[#f3c8dd] rounded-lg p-6 shadow-sm">
           <h2 className="text-2xl font-semibold text-gray mb-4">
             Completed Tasks ({completedTasks.length})
           </h2>
@@ -510,7 +510,7 @@ export default function Tasks() {
           ) : (
             <ul className="space-y-3">
               {completedTasks.map((task) => (
-                <li key={task.id} className="text-gray p-3 bg-green-50 rounded-md">
+                <li key={task.id} className="text-gray p-3 bg-[#f2e0d2] rounded-md">
                   {editingTaskId === task.id ? (
                     // Edit Form
                     <form onSubmit={updateTask} className="space-y-3">
@@ -520,7 +520,7 @@ export default function Tasks() {
                           placeholder="Task title"
                           value={editTaskTitle}
                           onChange={(e) => setEditTaskTitle(e.target.value)}
-                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 bg-[#f2e0d2]"
                         />
                       </div>
                       <div>
@@ -531,7 +531,7 @@ export default function Tasks() {
                           placeholder="Enter task description"
                           value={editTaskDescription}
                           onChange={(e) => setEditTaskDescription(e.target.value)}
-                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 bg-[#f2e0d2]"
                           rows={2}
                         />
                       </div>
@@ -543,12 +543,12 @@ export default function Tasks() {
                           type="date"
                           value={editTaskDueDate}
                           onChange={(e) => setEditTaskDueDate(e.target.value)}
-                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 bg-[#f2e0d2]"
                           min={getTodayDateString()}
                         />
                       </div>
                       <div className="flex gap-2">
-                        <Button type="submit" className="bg-[#af5f5f] hover:bg-[#af5f5f]/90">
+                        <Button type="submit" className="bg-[#795663] hover:bg-[#795663]/90">
                           Save
                         </Button>
                         <Button 
@@ -566,7 +566,7 @@ export default function Tasks() {
                       <div className="flex items-center flex-1">
                         <button
                           onClick={() => toggleTask(task)}
-                          className="w-4 h-4 bg-green-500 rounded mr-3 flex items-center justify-center cursor-pointer"
+                          className="w-4 h-4 bg-[#795663] rounded mr-3 flex items-center justify-center cursor-pointer"
                         >
                           <span className="text-white text-xs">✓</span>
                         </button>

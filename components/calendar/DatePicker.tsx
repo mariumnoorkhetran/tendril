@@ -25,10 +25,10 @@ export default function DatePicker({ onDateSelect, selectedDate }: DatePickerPro
         <Button
           variant="outline"
           data-empty={!selectedDate}
-          className="data-[empty=true]:text-muted-foreground w-[280px] justify-start text-left font-normal"
+          className="data-[empty=true]:text-muted-foreground w-[280px] justify-start text-left font-normal bg-[#795663] hover:bg-[#795663]/90 text-white hover:text-white"
         >
-          <CalendarIcon />
-          {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+          <CalendarIcon className="text-white"/>
+          {selectedDate ? format(selectedDate, "PPP") : <span className="text-white">Pick a date</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">

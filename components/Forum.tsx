@@ -5,7 +5,7 @@ import { api, ForumPost, Tip } from "../lib/api";
 import { getUserId } from "../lib/utils";
 
 export default function Forum() {
-  const [activeTab, setActiveTab] = useState("create");
+  const [activeTab, setActiveTab] = useState("all-posts");
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [newPostTitle, setNewPostTitle] = useState("");
@@ -279,37 +279,24 @@ export default function Forum() {
   return (
     <div className="m-8 max-w-5xl mx-auto">
       {/* Header Section */}
-      <div className="text-gray mb-8">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-4xl font-bold">Forum</h1>
-            <p className="text-lg text-gray mt-2">
-              Connect with the community and share your hygiene and wellness experiences.
-            </p>
-          </div>
-          <button
-            onClick={() => loadPosts}
-            disabled={loading}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              loading 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-[#af5f5f] hover:bg-[#af5f5f]/90'
-            } text-white text-sm cursor-pointer`}
-          >
-            {loading ? 'Loading...' : 'Refresh Posts'}
-          </button>
+      <div className="text-[#4b1535] mb-8">
+        <div>
+          <h1 className="text-4xl font-bold">Forum</h1>
+          <p className="text-lg text-gray mt-2">
+            Connect with the community and share your hygiene and wellness experiences.
+          </p>
         </div>
       </div>
 
       {/* Forum Content */}
-      <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
+      <div className="bg-[#f3c8dd] rounded-lg p-6 shadow-sm">
         {/* Tab Navigation */}
         <div className="flex border-b border-gray-400 mb-6">
           <button
             onClick={() => setActiveTab("submit-tip")}
-            className={`px-6 py-3 font-medium text-sm transition-colors ${
+            className={`px-6 py-3 font-semibold text-sm transition-colors ${
               activeTab === "submit-tip"
-                ? "text-[#af5f5f] border-b-2 border-[#af5f5f]"
+                ? "text-[#795663] border-b-2 border-[#795663]"
                 : "text-gray-500 hover:text-gray-700"
             } cursor-pointer`}
           >
@@ -317,9 +304,9 @@ export default function Forum() {
           </button>
           <button
             onClick={() => setActiveTab("create")}
-            className={`px-6 py-3 font-medium text-sm transition-colors ${
+            className={`px-6 py-3 font-semibold text-sm transition-colors ${
               activeTab === "create"
-                ? "text-[#af5f5f] border-b-2 border-[#af5f5f]"
+                ? "text-[#795663] border-b-2 border-[#795663]"
                 : "text-gray-500 hover:text-gray-700"
             } cursor-pointer`}
           >
@@ -327,9 +314,9 @@ export default function Forum() {
           </button>
           <button
             onClick={() => { setActiveTab("my-posts"); loadPosts(true); }}
-            className={`px-6 py-3 font-medium text-sm transition-colors ${
+            className={`px-6 py-3 font-semibold text-sm transition-colors ${
               activeTab === "my-posts"
-                ? "text-[#af5f5f] border-b-2 border-[#af5f5f]"
+                ? "text-[#795663] border-b-2 border-[#795663]"
                 : "text-gray-500 hover:text-gray-700"
             } cursor-pointer`}
           >
@@ -337,9 +324,9 @@ export default function Forum() {
           </button>
           <button
             onClick={() => { setActiveTab("all-posts"); loadPosts(false); }}
-            className={`px-6 py-3 font-medium text-sm transition-colors ${
+            className={`px-6 py-3 font-semibold text-sm transition-colors ${
               activeTab === "all-posts"
-                ? "text-[#af5f5f] border-b-2 border-[#af5f5f]"
+                ? "text-[#795663] border-b-2 border-[#795663]"
                 : "text-gray-500 hover:text-gray-700"
             } cursor-pointer`}
           >
@@ -359,7 +346,7 @@ export default function Forum() {
                     placeholder="Post title..."
                     value={newPostTitle}
                     onChange={(e) => setNewPostTitle(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                    className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 bg-[#f2e0d2]"
                     required
                   />
                 </div>
@@ -369,13 +356,13 @@ export default function Forum() {
                     value={newPostContent}
                     onChange={handleContentChange}
                     rows={6}
-                    className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                    className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 bg-[#f2e0d2]"
                     required
                   />
                   {/* Analysis status - only show when analyzing during publish */}
                   {analyzingContent && (
                     <div className="mt-2 text-sm text-gray-600 flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#af5f5f] mr-2"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#795663] mr-2"></div>
                       Analyzing content for community guidelines...
                     </div>
                   )}
@@ -396,9 +383,9 @@ export default function Forum() {
 
                 {/* Compassionate Rewriting Suggestion */}
                 {showRewritingSuggestion && (
-                  <div className="bg-[#fef7f0] border border-[#af5f5f] rounded-lg p-4 space-y-3">
+                  <div className="bg-[#fef7f0] border border-[#795663] rounded-lg p-4 space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-[#af5f5f] text-lg">💝</span>
+                      <span className="text-[#795663] text-lg">💝</span>
                       <h4 className="font-semibold text-gray">Compassionate Suggestion</h4>
                       <div className="relative group">
                         <span className="text-gray-400 text-sm cursor-help">ℹ️</span>
@@ -425,7 +412,7 @@ export default function Forum() {
                         className={`px-4 py-2 rounded-lg transition-colors text-sm cursor-pointer ${
                           useRewrittenContent 
                             ? 'bg-green-600 text-white' 
-                            : 'bg-[#af5f5f] text-white hover:bg-[#af5f5f]/90'
+                            : 'bg-[#795663] text-white hover:bg-[#795663]/90'
                         }`}
                       >
                         {useRewrittenContent ? '✓ Using This Version' : 'Use This Version'}
@@ -468,7 +455,7 @@ export default function Forum() {
                       ? 'bg-gray-400 cursor-not-allowed' 
                       : showRewritingSuggestion && !useRewrittenContent
                       ? 'bg-red-500 cursor-not-allowed'
-                      : 'bg-[#af5f5f] hover:bg-[#af5f5f]/90'
+                      : 'bg-[#795663] hover:bg-[#795663]/90'
                   } text-white cursor-pointer`}
                 >
                   {analyzingContent 
@@ -502,20 +489,20 @@ export default function Forum() {
                       setTipUseRewrittenContent(false);
                     }}
                     rows={6}
-                    className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                    className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 bg-[#f2e0d2]"
                     required
                   />
                 </div>
                 {tipAnalyzingContent && (
                   <div className="mt-2 text-sm text-gray-600 flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#af5f5f] mr-2"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#795663] mr-2"></div>
                     Analyzing content for community guidelines...
                   </div>
                 )}
                 {tipShowRewritingSuggestion && (
-                  <div className="bg-[#fef7f0] border border-[#af5f5f] rounded-lg p-4 space-y-3">
+                  <div className="bg-[#fef7f0] border border-[#795663] rounded-lg p-4 space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-[#af5f5f] text-lg">💝</span>
+                      <span className="text-[#795663] text-lg">💝</span>
                       <h4 className="font-semibold text-gray">Compassionate Suggestion</h4>
                     </div>
                     <p className="text-sm text-gray-600">
@@ -564,7 +551,7 @@ export default function Forum() {
                   className={`px-6 py-2 rounded-lg transition-colors ${
                     submittingTip || tipAnalyzingContent || tipShowRewritingSuggestion
                       ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-[#af5f5f] hover:bg-[#af5f5f]/90'
+                      : 'bg-[#795663] hover:bg-[#795663]/90'
                   } text-white cursor-pointer`}
                 >
                   {tipAnalyzingContent
@@ -583,6 +570,17 @@ export default function Forum() {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-semibold text-gray">My Posts</h3>
+                <button
+                  onClick={() => loadPosts(true)}
+                  disabled={loading}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    loading 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-[#795663] hover:bg-[#795663]/90'
+                  } text-white text-sm cursor-pointer`}
+                >
+                  {loading ? 'Loading...' : 'Refresh Posts'}
+                </button>
               </div>
               {loading ? (
                 <p className="text-gray">Loading posts...</p>
@@ -591,7 +589,7 @@ export default function Forum() {
                   <p className="text-gray-500">You haven't created any posts yet.</p>
                   <button 
                     onClick={() => setActiveTab("create")}
-                    className="mt-4 bg-[#af5f5f] text-white px-4 py-2 rounded-lg hover:bg-[#af5f5f]/90 transition-colors cursor-pointer"
+                    className="mt-4 bg-[#795663] text-white px-4 py-2 rounded-lg hover:bg-[#795663]/90 transition-colors cursor-pointer"
                   >
                     Create Your First Post
                   </button>
@@ -599,7 +597,7 @@ export default function Forum() {
               ) : (
                 <div className="space-y-4">
                   {sortedPosts.map((post) => (
-                    <div key={post.id} className="border border-gray-400 rounded-lg p-4 transition-colors">
+                    <div key={post.id} className="border border-gray-400 rounded-lg p-4 transition-colors bg-[#f2e0d2]">
                       <h4 className="font-semibold text-gray mb-2">{post.title}</h4>
                       <p className="text-gray-600 text-sm mb-3">
                         {post.content.length > 150 
@@ -633,7 +631,7 @@ export default function Forum() {
                       <div className="mt-3">
                         <Link 
                           href={`/forum/posts/${post.id}`}
-                          className="inline-block px-4 py-2 bg-[#af5f5f] text-white rounded-lg hover:bg-[#af5f5f]/90 transition-colors cursor-pointer"
+                          className="inline-block px-4 py-2 bg-[#795663] text-white rounded-lg hover:bg-[#795663]/90 transition-colors cursor-pointer"
                         >
                           Open Post
                         </Link>
@@ -647,7 +645,20 @@ export default function Forum() {
 
           {activeTab === "all-posts" && (
             <div>
-              <h3 className="text-xl font-semibold text-gray mb-4">All Posts</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold text-gray">All Posts</h3>
+                <button
+                  onClick={() => loadPosts(false)}
+                  disabled={loading}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    loading 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-[#795663] hover:bg-[#795663]/90'
+                  } text-white text-sm cursor-pointer`}
+                >
+                  {loading ? 'Loading...' : 'Refresh Posts'}
+                </button>
+              </div>
               {loading ? (
                 <p className="text-gray">Loading posts...</p>
               ) : sortedPosts.length === 0 ? (
@@ -655,7 +666,7 @@ export default function Forum() {
                   <p className="text-gray-500">No posts available yet.</p>
                   <button 
                     onClick={() => setActiveTab("create")}
-                    className="mt-4 bg-[#af5f5f] text-white px-4 py-2 rounded-lg hover:bg-[#af5f5f]/90 transition-colors cursor-pointer"
+                    className="mt-4 bg-[#795663] text-white px-4 py-2 rounded-lg hover:bg-[#795663]/90 transition-colors cursor-pointer"
                   >
                     Create the First Post
                   </button>
@@ -663,7 +674,7 @@ export default function Forum() {
               ) : (
                 <div className="space-y-4">
                   {sortedPosts.map((post) => (
-                    <div key={post.id} className="border border-gray-400 rounded-lg p-4 transition-colors">
+                    <div key={post.id} className="border border-gray-400 rounded-lg p-4 transition-colors bg-[#f2e0d2]">
                       <h4 className="font-semibold text-gray mb-2">{post.title}</h4>
                       <p className="text-gray-600 text-sm mb-3">
                         {post.content.length > 150 
@@ -697,7 +708,7 @@ export default function Forum() {
                       <div className="mt-3">
                         <Link 
                           href={`/forum/posts/${post.id}`}
-                          className="inline-block px-4 py-2 bg-[#af5f5f] text-white rounded-lg hover:bg-[#af5f5f]/90 transition-colors cursor-pointer"
+                          className="inline-block px-4 py-2 bg-[#795663] text-white rounded-lg hover:bg-[#795663]/90 transition-colors cursor-pointer"
                         >
                           Open Post
                         </Link>
@@ -711,12 +722,12 @@ export default function Forum() {
         </div>
       </div>
       {tipNotification && (
-        <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg bg-green-200 text-green-900 text-lg font-semibold shadow-lg animate-fade-in">
+        <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg bg-[#795663] text-white text-lg font-semibold shadow-lg animate-fade-in">
           <span role="img" aria-label="celebrate">🥳</span> {tipNotification}
         </div>
       )}
       {postNotification && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg bg-green-200 text-green-900 text-lg font-semibold shadow-lg animate-fade-in">
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg bg-[#795663] text-white text-lg font-semibold shadow-lg animate-fade-in">
           <span role="img" aria-label="check">✅</span> {postNotification}
         </div>
       )}
