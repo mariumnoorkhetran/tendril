@@ -4,6 +4,19 @@ import { useState, useEffect, useRef } from 'react';
 import { api, Task } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 
+const AFFIRMATION_MESSAGES = [
+  "Great job! You did it!",
+  "Keep up the awesome work!",
+  "You're making amazing progress!",
+  "Another task down, well done!",
+  "You're unstoppable!",
+  "Way to go!",
+  "You should be proud of yourself!",
+  "Fantastic effort!",
+  "You crushed it!",
+  "Success! Keep going!"
+];
+
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -15,6 +28,8 @@ export default function Tasks() {
   const [editTaskDescription, setEditTaskDescription] = useState('');
   const [editTaskDueDate, setEditTaskDueDate] = useState('');
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const [affirmation, setAffirmation] = useState<string | null>(null);
+  const affirmationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     loadTasks();
@@ -145,7 +160,13 @@ export default function Tasks() {
       };
       
       setTasks(tasks.map(t => t.id === task.id ? updatedTask : t));
-      
+      // Show affirmation if marking as completed
+      if (newCompletedStatus) {
+        const randomMsg = AFFIRMATION_MESSAGES[Math.floor(Math.random() * AFFIRMATION_MESSAGES.length)];
+        setAffirmation(randomMsg);
+        if (affirmationTimeoutRef.current) clearTimeout(affirmationTimeoutRef.current);
+        affirmationTimeoutRef.current = setTimeout(() => setAffirmation(null), 3500);
+      }
     } catch (error) {
       console.error('Failed to update task:', error);
     }
@@ -183,6 +204,12 @@ export default function Tasks() {
 
   return (
     <div className="m-8 max-w-5xl ">
+      {/* Affirmation Toast */}
+      {affirmation && (
+        <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg bg-green-200 text-green-900 text-lg font-semibold shadow-lg animate-fade-in">
+          <span role="img" aria-label="celebrate">🥳</span> {affirmation}
+        </div>
+      )}
       {/* Header Section */}
       <div className="text-gray mb-8">
         <h1 className="text-4xl font-bold">

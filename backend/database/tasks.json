@@ -63,6 +63,15 @@
     "completion_history": {
       "2025-07-27": true
     }
+  },
+  {
+    "id": "4aa6b349-2be5-4863-8648-b0637e20a797",
+    "title": "Drink 4 glasses of water",
+    "description": null,
+    "completed": true,
+    "due_date": "2025-07-28",
+    "completion_history": {
+      "2025-07-27": true
+    }
   }
-
 ]
