@@ -82,7 +82,7 @@ export default function PostPage() {
     return (
       <div className="bg-pink min-h-screen">
         <Navbar />
-        <div className="m-8 max-w-4xl">
+        <div className="m-8 max-w-5xl">
           <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-300 rounded mb-4"></div>
@@ -101,7 +101,7 @@ export default function PostPage() {
     return (
       <div className="bg-pink min-h-screen">
         <Navbar />
-        <div className="m-8 max-w-4xl">
+        <div className="m-8 max-w-5xl">
           <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm">
             <div className="text-center py-8">
               <h1 className="text-2xl font-bold text-gray mb-4">Post Not Found</h1>
@@ -122,7 +122,7 @@ export default function PostPage() {
   return (
     <div className="bg-pink min-h-screen">
       <Navbar />
-      <div className="m-8 max-w-4xl">
+      <div className="m-8 max-w-5xl">
         {/* Back Button */}
         <div className="mb-4">
           <Link 
