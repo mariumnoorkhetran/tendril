@@ -108,7 +108,7 @@ function CommentItem({ comment, postId, onCommentAdded, level = 0 }: CommentItem
           return; // Don't publish, let user choose
         } else {
           // No suggestion available, block the reply
-          alert('Your reply contains negative self-talk. Please edit your message to remove negative words before posting.\n\nThis helps create a supportive community environment.');
+          alert('Your reply contains negative talk. Please edit your message to remove negative words before posting.\n\nThis helps create a supportive community environment.');
           setAnalyzingContent(false);
           setSubmitting(false);
           return;
@@ -274,9 +274,16 @@ function CommentItem({ comment, postId, onCommentAdded, level = 0 }: CommentItem
                 <div className="flex items-center gap-2">
                   <span className="text-[#af5f5f] text-sm">💝</span>
                   <h4 className="font-semibold text-gray text-sm">Compassionate Suggestion</h4>
+                  <div className="relative group">
+                    <span className="text-gray-400 text-xs cursor-help">ℹ️</span>
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                      Suggestions powered by AI
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                    </div>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-600">
-                  We noticed some self-critical language in your reply. To create a supportive community, please either:
+                  We noticed some critical language in your reply. To create a supportive community, please either:
                 </p>
                 <div className="bg-white rounded-lg p-2 border">
                   <p className="text-gray-700 text-xs whitespace-pre-wrap">{rewrittenContent}</p>
@@ -318,7 +325,7 @@ function CommentItem({ comment, postId, onCommentAdded, level = 0 }: CommentItem
               <div className="bg-red-50 border border-red-200 rounded-lg p-2 mt-2">
                 <div className="flex items-center gap-2 text-red-700">
                   <span>⚠️</span>
-                  <span className="text-xs font-medium">Your message still contains negative self-talk</span>
+                  <span className="text-xs font-medium">Your message still contains negative talk</span>
                 </div>
                 <p className="text-xs text-red-600 mt-1">
                   Please either use the compassionate version above or edit your message to remove negative words.
@@ -461,7 +468,7 @@ export default function Comments({ postId }: CommentsProps) {
           return; // Don't publish, let user choose
         } else {
           // No suggestion available, block the comment
-          alert('Your comment contains negative self-talk. Please edit your message to remove negative words before posting.\n\nThis helps create a supportive community environment.');
+          alert('Your comment contains negative talk. Please edit your message to remove negative words before posting.\n\nThis helps create a supportive community environment.');
           setAnalyzingContent(false);
           setSubmitting(false);
           return;
@@ -556,9 +563,16 @@ export default function Comments({ postId }: CommentsProps) {
               <div className="flex items-center gap-2">
                 <span className="text-[#af5f5f] text-lg">💝</span>
                 <h4 className="font-semibold text-gray">Compassionate Suggestion</h4>
+                <div className="relative group">
+                  <span className="text-gray-400 text-sm cursor-help">ℹ️</span>
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                    Suggestions powered by AI
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                  </div>
+                </div>
               </div>
               <p className="text-sm text-gray-600">
-                We noticed some self-critical language in your comment. To create a supportive community, please either:
+                We noticed some critical language in your comment. To create a supportive community, please either:
               </p>
               <div className="bg-white rounded-lg p-3 border">
                 <p className="text-gray-700 text-sm whitespace-pre-wrap">{rewrittenContent}</p>
@@ -600,7 +614,7 @@ export default function Comments({ postId }: CommentsProps) {
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
               <div className="flex items-center gap-2 text-red-700">
                 <span>⚠️</span>
-                <span className="text-sm font-medium">Your message still contains negative self-talk</span>
+                <span className="text-sm font-medium">Your message still contains negative talk</span>
               </div>
               <p className="text-xs text-red-600 mt-1">
                 Please either use the compassionate version above or edit your message to remove negative words.

@@ -17,7 +17,12 @@ class CompassionateRewriter:
             'stupid', 'idiot', 'worthless', 'useless', 'pathetic', 'failure',
             'disgusted', 'sick', 'nasty', 'gross', 'filthy', 'dirty',
             'embarrassed', 'ashamed', 'guilty', 'hopeless', 'helpless',
-            'weak', 'broken', 'damaged', 'ruined', 'destroyed', 'messed up'
+            'weak', 'broken', 'damaged', 'ruined', 'destroyed', 'messed up',
+            'dumb', 'yikes', 'cringe', 'ridiculous', 'absurd', 'nonsense',
+            'terrible', 'awful', 'horrible', 'disgusting', 'gross', 'nasty',
+            'embarrassing', 'shameful', 'pathetic', 'useless', 'pointless',
+            'meaningless', 'hopeless', 'helpless', 'powerless', 'defeated',
+            'beaten', 'crushed', 'destroyed', 'ruined', 'wasted', 'squandered'
         }
         
         # Initialize Groq client if API key is available
