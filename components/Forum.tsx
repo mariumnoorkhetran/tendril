@@ -32,6 +32,11 @@ export default function Forum() {
   const [rewrittenContent, setRewrittenContent] = useState("");
   const [analyzingContent, setAnalyzingContent] = useState(false);
   const [useRewrittenContent, setUseRewrittenContent] = useState(false);
+  const [rateLimitInfo, setRateLimitInfo] = useState<{
+    remaining_requests: number;
+    max_requests: number;
+    window_seconds: number;
+  } | null>(null);
 
   // Load posts from backend
   const loadPosts = async () => {
@@ -52,14 +57,26 @@ export default function Forum() {
     
     try {
       setAnalyzingContent(true);
-      const analysis = await api.analyzePostContent(content);
+      const userId = getUserId();
+      const analysis = await api.analyzePostContent(content, userId);
       
       if (analysis.contains_negative_words && analysis.suggestion_available) {
         setRewrittenContent(analysis.rewritten_text || "");
         setShowRewritingSuggestion(true);
       }
-    } catch (error) {
+      
+      // Update rate limit info
+      if (analysis.rate_limit) {
+        setRateLimitInfo(analysis.rate_limit);
+      }
+    } catch (error: any) {
       console.error('Failed to analyze content:', error);
+      
+      // Handle rate limit errors
+      if (error.status === 429) {
+        const errorDetail = error.detail || {};
+        alert(`Rate limit exceeded: ${errorDetail.message || 'Too many analysis requests. Please wait before trying again.'}`);
+      }
     } finally {
       setAnalyzingContent(false);
     }
@@ -99,7 +116,8 @@ export default function Forum() {
 
     // Check if the content to be posted contains negative words
     const contentToPost = useRewrittenContent ? rewrittenContent : newPostContent;
-    const analysis = await api.analyzePostContent(contentToPost);
+    const userId = getUserId();
+    const analysis = await api.analyzePostContent(contentToPost, userId);
     
     if (analysis.contains_negative_words) {
       alert('Your post contains negative self-talk. Please either:\n\n1. Use the compassionate version above, OR\n2. Edit your message to remove negative words\n\nThis helps create a supportive community environment.');
@@ -315,6 +333,19 @@ export default function Forum() {
                     <div className="mt-2 text-sm text-gray-600 flex items-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#af5f5f] mr-2"></div>
                       Analyzing your content...
+                    </div>
+                  )}
+                  
+                  {/* Rate Limit Indicator */}
+                  {rateLimitInfo && (
+                    <div className="mt-2 text-xs text-gray-500 flex items-center gap-2">
+                      <span>📊</span>
+                      <span>
+                        Analysis requests: {rateLimitInfo.remaining_requests}/{rateLimitInfo.max_requests} remaining
+                        {rateLimitInfo.remaining_requests <= 2 && (
+                          <span className="text-orange-600 font-medium"> (limit approaching)</span>
+                        )}
+                      </span>
                     </div>
                   )}
                 </div>

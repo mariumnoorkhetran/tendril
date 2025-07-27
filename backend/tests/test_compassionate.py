@@ -5,14 +5,35 @@ Test script for compassionate rewriting functionality
 
 import os
 import sys
+from dotenv import load_dotenv
+
+# Add the parent directory to the path so we can import from data module
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Load environment variables from the root directory (tendril/)
+root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+load_dotenv(os.path.join(root_dir, '.env'))
+
+# Import after loading environment variables
 from data.compassionate_rewriter import CompassionateRewriter
+
+
 
 def test_compassionate_rewriter():
     """Test the compassionate rewriter functionality"""
     
     print("Testing Compassionate Rewriter...")
     
-    # Initialize the rewriter
+    # Check if GROQ_API_KEY is set
+    if not os.getenv("GROQ_API_KEY"):
+        print("⚠️  WARNING: GROQ_API_KEY not found in environment variables")
+        print("   The compassionate rewriter will detect negative words but cannot rewrite them.")
+        print("   To enable rewriting, set your GROQ_API_KEY in a .env file or environment variable.")
+        print("   See backend/SETUP.md for instructions.\n")
+    else:
+        print(f"✅ GROQ_API_KEY found: {os.getenv('GROQ_API_KEY')[:10]}...")
+    
+    # Initialize the rewriter AFTER checking environment variables
     rewriter = CompassionateRewriter()
     
     # Test cases

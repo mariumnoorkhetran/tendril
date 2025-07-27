@@ -24,10 +24,14 @@ class CompassionateRewriter:
         api_key = os.environ.get("GROQ_API_KEY")
         if api_key:
             try:
+                logger.info(f"Attempting to initialize Groq client with API key: {api_key[:10]}...")
                 self.client = Groq(api_key=api_key)
                 logger.info("Groq client initialized successfully")
             except Exception as e:
                 logger.error(f"Failed to initialize Groq client: {e}")
+                logger.error(f"Error type: {type(e).__name__}")
+                import traceback
+                logger.error(f"Full traceback: {traceback.format_exc()}")
                 self.client = None
         else:
             logger.warning("GROQ_API_KEY not found in environment variables")

@@ -2,12 +2,18 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Dict
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import uvicorn
 import uuid
+import time
+import os
+from dotenv import load_dotenv
 from data.data_manager import DataManager
 from data.streak_manager import StreakManager
 from data.compassionate_rewriter import CompassionateRewriter
+
+# Load environment variables from .env file in root directory
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'))
 
 app = FastAPI(title="Tendril Wellness API", version="1.0.0")
 
@@ -19,6 +25,51 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Simple Rate Limiter for Compassionate Rewriter
+class RateLimiter:
+    def __init__(self, max_requests: int = 10, window_seconds: int = 60):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.requests = {}  # user_id -> list of timestamps
+    
+    def is_allowed(self, user_id: str) -> bool:
+        """Check if user is allowed to make a request"""
+        now = time.time()
+        
+        # Clean old requests outside the window
+        if user_id in self.requests:
+            self.requests[user_id] = [
+                timestamp for timestamp in self.requests[user_id]
+                if now - timestamp < self.window_seconds
+            ]
+        else:
+            self.requests[user_id] = []
+        
+        # Check if user has exceeded the limit
+        if len(self.requests[user_id]) >= self.max_requests:
+            return False
+        
+        # Add current request
+        self.requests[user_id].append(now)
+        return True
+    
+    def get_remaining_requests(self, user_id: str) -> int:
+        """Get remaining requests for a user"""
+        now = time.time()
+        
+        if user_id in self.requests:
+            # Clean old requests
+            self.requests[user_id] = [
+                timestamp for timestamp in self.requests[user_id]
+                if now - timestamp < self.window_seconds
+            ]
+            return max(0, self.max_requests - len(self.requests[user_id]))
+        
+        return self.max_requests
+
+# Initialize rate limiter (10 requests per minute per user)
+rate_limiter = RateLimiter(max_requests=10, window_seconds=60)
 
 # Pydantic models
 class Task(BaseModel):
@@ -78,6 +129,7 @@ class Tip(BaseModel):
 
 class PostAnalysisRequest(BaseModel):
     content: str
+    user_id: Optional[str] = None
 
 # Calendar response model for date-specific tasks
 class CalendarDayResponse(BaseModel):
@@ -365,7 +417,33 @@ async def get_post(post_id: str):
 @app.post("/api/posts/analyze")
 async def analyze_post_content(request: PostAnalysisRequest):
     """Analyze post content for negative words and suggest compassionate rewriting"""
+    # Use default user ID if not provided
+    user_id = request.user_id or "anonymous"
+    
+    # Check rate limit
+    if not rate_limiter.is_allowed(user_id):
+        remaining_time = rate_limiter.window_seconds
+        raise HTTPException(
+            status_code=429, 
+            detail={
+                "error": "Rate limit exceeded",
+                "message": f"Too many analysis requests. Please wait {remaining_time} seconds before trying again.",
+                "remaining_requests": 0,
+                "window_seconds": rate_limiter.window_seconds
+            }
+        )
+    
+    # Perform analysis
     analysis = compassionate_rewriter.analyze_and_suggest_rewrite(request.content)
+    
+    # Add rate limit info to response
+    remaining_requests = rate_limiter.get_remaining_requests(user_id)
+    analysis["rate_limit"] = {
+        "remaining_requests": remaining_requests,
+        "max_requests": rate_limiter.max_requests,
+        "window_seconds": rate_limiter.window_seconds
+    }
+    
     return analysis
 
 @app.post("/api/posts", response_model=ForumPost)
