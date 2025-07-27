@@ -51,17 +51,17 @@ For people struggling with mental health issues or chronic pain, maintaining hyg
 
 | Area       | Tech                       |
 |------------|----------------------------|
-| Frontend   | Next.js, React, Tailwind CSS |
-| Backend    | Python (Flask/FastAPI), Groq API |
-| Hosting    | Vercel (frontend), Render (backend) |
-| AI Tools   | Groq LLM (affirmations, post rewrites) |
-| Storage    | JSON file (or Supabase, if added) |
+| Frontend   | Next.js, React, Tailwind CSS, TypeScript |
+| Backend    | Python (FastAPI), Groq API |
+| Hosting    | Vercel (frontend), Railway (backend) |
+| AI Tools   | Groq LLM, Cursor IDE, ChatGPT |
+| Storage    | JSON file |
 
 ---
 
 ## Team
 
-- [Name] — Frontend, UI/UX
+- [[Abdullah Khetran]([url](https://github.com/abdullahkhetran))] — Frontend, UI/UX
 - [Name] — Backend, Logic
 - [Name] — Deployment
 - [Name] — Presentation
