@@ -18,9 +18,24 @@ load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file_
 app = FastAPI(title="Tendril Wellness API", version="1.0.0")
 
 # CORS configuration for frontend
+# Get frontend URL from environment variable, fallback to localhost for development
+frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+
+# Create list of allowed origins
+allowed_origins = [
+    "http://localhost:3000",  # Next.js dev server (local development)
+]
+
+# Add production frontend URL if provided
+if frontend_url and frontend_url != "http://localhost:3000":
+    allowed_origins.extend([
+        frontend_url,
+        f"{frontend_url}/",  # Add with trailing slash
+    ])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js dev server
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -595,4 +610,5 @@ async def react_to_comment(comment_id: str):
     }
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port) 
