@@ -5,5 +5,14 @@
   "is_paused": false,
   "completion_dates": [
     "2025-07-27"
-  ]
+  ],
+  "user_249ks2lp2": {
+    "completion_dates": [
+      "2025-07-27"
+    ],
+    "last_completion_date": "2025-07-27",
+    "current_streak": 1,
+    "is_paused": false,
+    "longest_streak": 1
+  }
 }

@@ -73,5 +73,25 @@
     "completion_history": {
       "2025-07-27": true
     }
+  },
+  {
+    "id": "5da09f94-526f-4bb3-a8ad-9d0bf1db364a",
+    "title": "Brush Teeth",
+    "description": null,
+    "completed": true,
+    "due_date": "2025-07-30",
+    "completion_history": {
+      "2025-07-27": true
+    },
+    "user_id": "user_249ks2lp2"
+  },
+  {
+    "id": "d6beb6b0-7d0f-4903-a0af-e48798c6faf0",
+    "title": "Drink Water",
+    "description": null,
+    "completed": false,
+    "due_date": "2025-07-27",
+    "completion_history": {},
+    "user_id": "user_249ks2lp2"
   }
 ]

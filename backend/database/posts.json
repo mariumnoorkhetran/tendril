@@ -56,6 +56,18 @@
     "category": null,
     "created_at": "2025-07-27T07:46:23.230244",
     "comments_count": 0,
+    "reactions_count": 1,
+    "user_reacted": true
+  },
+  {
+    "id": "fdc82558-b05b-4d2b-b62f-a5bf449fe862",
+    "title": "Buy a good mattress",
+    "content": "Sleeping on a good mattress improves sleep and avoids pain",
+    "user_id": "user_249ks2lp2",
+    "author": null,
+    "category": null,
+    "created_at": "2025-07-27T20:27:38.276819",
+    "comments_count": 0,
     "reactions_count": 0,
     "user_reacted": false
   }

@@ -68,5 +68,23 @@
     "likes": 0,
     "created_at": "2025-07-27T03:04:57.187466",
     "is_featured": false
+  },
+  {
+    "id": "86e49397-ab44-409d-a46f-32827162d73a",
+    "content": "Stay hydrated",
+    "author": "Community Member",
+    "category": "Wellness",
+    "likes": 0,
+    "created_at": "2025-07-27T20:26:33.228203",
+    "is_featured": false
+  },
+  {
+    "id": "bbc8dc55-413a-4cce-8b70-491e169fe6b3",
+    "content": "Do early morning walk",
+    "author": "Community Member",
+    "category": "Wellness",
+    "likes": 0,
+    "created_at": "2025-07-27T20:34:32.504350",
+    "is_featured": false
   }
 ]

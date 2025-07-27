@@ -35,7 +35,7 @@ class StreakManager:
         self._calculate_streak(streak_data)
         
         # Save updated streak data
-        self.data_manager.save_streak(streak_data)
+        self.data_manager.save_streak(user_id, streak_data)
         
         return streak_data
     

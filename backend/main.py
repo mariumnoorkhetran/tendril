@@ -176,44 +176,6 @@ data_manager = DataManager()
 streak_manager = StreakManager(data_manager)
 compassionate_rewriter = CompassionateRewriter()
 
-# Initialize in-memory storage with data from files
-def initialize_data():
-    tasks_db = {}
-    posts_db = {}
-    comments_db = {}
-    tips_db = {}
-    
-    # Load tasks from file
-    tasks_data = data_manager.load_tasks()
-    for task_data in tasks_data:
-        task = Task(**task_data)
-        tasks_db[task.id] = task
-    
-
-    
-    # Load posts from file
-    posts_data = data_manager.load_posts()
-    for post_data in posts_data:
-        post = ForumPost(**post_data)
-        posts_db[post.id] = post
-    
-    # Load comments from file
-    comments_data = data_manager.load_comments()
-    for comment_data in comments_data:
-        comment = Comment(**comment_data)
-        comments_db[comment.id] = comment
-    
-    # Load tips from file
-    tips_data = data_manager.load_tips()
-    for tip_data in tips_data:
-        tip = Tip(**tip_data)
-        tips_db[tip.id] = tip
-    
-    return tasks_db, posts_db, comments_db, tips_db
-
-# Initialize databases
-tasks_db, posts_db, comments_db, tips_db = initialize_data()
-
 # Health check endpoint
 @app.get("/")
 async def root():
@@ -264,7 +226,7 @@ async def update_task(task_id: str, task: Task):
     
     # Preserve completion history if not provided
     if task.completion_history is None:
-        task.completion_history = tasks_db[task_id].completion_history or {}
+        task.completion_history = data_manager.load_tasks(task.user_id)[0].completion_history or {}
     
     data_manager.save_task(task.model_dump())
     
@@ -286,7 +248,8 @@ async def get_calendar_day(target_date: date, user_id: str):
     """Get all tasks for a specific date with completion statistics"""
     day_tasks = []
     
-    for task in data_manager.load_tasks(user_id):
+    for task_dict in data_manager.load_tasks(user_id):
+        task = Task(**task_dict)
         # Check if task is due on the target date
         if task.due_date == target_date:
             # Check completion status for this specific date
@@ -379,33 +342,30 @@ async def complete_task_for_streak(completion_date: date, user_id: str):
 @app.get("/api/tips", response_model=List[Tip])
 async def get_tips():
     """Get all tips"""
-    return list(tips_db.values())
+    return list(data_manager.load_tips())
 
 @app.get("/api/tips/featured", response_model=List[Tip])
 async def get_featured_tips():
     """Get featured tips"""
-    featured_tips = [tip for tip in tips_db.values() if tip.is_featured]
+    tips = data_manager.load_tips()
+    featured_tips = [tip for tip in tips if tip.is_featured]
     return featured_tips
 
 @app.get("/api/tips/random", response_model=Tip)
 async def get_random_tip():
     """Get a random tip"""
     import random
-    if not tips_db:
+    tips = data_manager.load_tips()
+    if not tips:
         raise HTTPException(status_code=404, detail="No tips available")
-    tip_id = random.choice(list(tips_db.keys()))
-    return tips_db[tip_id]
+    return random.choice(tips)
 
 @app.post("/api/tips", response_model=Tip)
 async def create_tip(tip: Tip):
     """Create a new tip"""
     tip.id = str(uuid.uuid4())
     tip.created_at = datetime.now()
-    tips_db[tip.id] = tip
-    
-    # Save to persistent storage
-    tip_dict = tip.model_dump()
-    data_manager.save_tip(tip_dict)
+    data_manager.save_tip(tip.model_dump())
     
     return tip
 
@@ -420,9 +380,11 @@ async def get_posts(user_id: Optional[str] = None):
 @app.get("/api/posts/{post_id}", response_model=ForumPost)
 async def get_post(post_id: str):
     """Get a specific post by ID"""
-    if post_id not in posts_db:
+    posts = data_manager.load_posts()
+    post = next((p for p in posts if p.get('id') == post_id), None)
+    if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    return posts_db[post_id]
+    return post
 
 @app.post("/api/posts/analyze")
 async def analyze_post_content(request: PostAnalysisRequest):
@@ -492,94 +454,82 @@ async def analyze_comment_content(request: CommentAnalysisRequest):
 async def create_post(post: ForumPost):
     post.id = str(uuid.uuid4())
     post.created_at = datetime.now()
-    posts_db[post.id] = post
-    
-    # Save to persistent storage
-    post_dict = post.model_dump()
-    data_manager.save_post(post_dict)
+    data_manager.save_post(post.model_dump())
     
     return post
 
 @app.post("/api/posts/{post_id}/react")
 async def react_to_post(post_id: str):
     """React to a post (toggle reaction)"""
-    if post_id not in posts_db:
+    posts = data_manager.load_posts()
+    post = next((p for p in posts if p.get('id') == post_id), None)
+    if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     
-    post = posts_db[post_id]
-    
     # Toggle reaction
-    if post.user_reacted:
-        post.reactions_count = max(0, (post.reactions_count or 0) - 1)
-        post.user_reacted = False
+    if post.get('user_reacted'):
+        post['reactions_count'] = max(0, (post.get('reactions_count') or 0) - 1)
+        post['user_reacted'] = False
     else:
-        post.reactions_count = (post.reactions_count or 0) + 1
-        post.user_reacted = True
+        post['reactions_count'] = (post.get('reactions_count') or 0) + 1
+        post['user_reacted'] = True
     
     # Save to persistent storage
-    post_dict = post.model_dump()
-    data_manager.save_post(post_dict)
+    data_manager.save_post(post)
     
     return {
         "message": "Reaction updated",
         "post_id": post_id,
-        "reactions_count": post.reactions_count,
-        "user_reacted": post.user_reacted
+        "reactions_count": post['reactions_count'],
+        "user_reacted": post['user_reacted']
     }
 
 # Comment endpoints
 @app.get("/api/posts/{post_id}/comments", response_model=List[Comment])
 async def get_comments(post_id: str):
     """Get all comments for a specific post"""
-    if post_id not in posts_db:
+    if post_id not in data_manager.load_posts():
         raise HTTPException(status_code=404, detail="Post not found")
     
     # Filter comments by post_id and organize them in a threaded structure
-    post_comments = [comment for comment in comments_db.values() if comment.post_id == post_id]
+    post_comments = [comment for comment in data_manager.load_comments() if comment.post_id == post_id]
     return post_comments
 
 @app.post("/api/posts/{post_id}/comments", response_model=Comment)
 async def create_comment(post_id: str, comment: Comment):
     """Create a new comment on a post"""
-    if post_id not in posts_db:
+    if post_id not in data_manager.load_posts():
         raise HTTPException(status_code=404, detail="Post not found")
     
     # Validate parent_id if provided
-    if comment.parent_id and comment.parent_id not in comments_db:
+    if comment.parent_id and comment.parent_id not in data_manager.load_comments():
         raise HTTPException(status_code=404, detail="Parent comment not found")
     
     comment.id = str(uuid.uuid4())
     comment.post_id = post_id
     comment.created_at = datetime.now()
-    comments_db[comment.id] = comment
+    data_manager.save_comment(comment.model_dump())
     
     # Update parent comment's replies count if this is a reply
     if comment.parent_id:
-        parent_comment = comments_db[comment.parent_id]
+        parent_comment = data_manager.load_comments()[comment.parent_id]
         parent_comment.replies_count = (parent_comment.replies_count or 0) + 1
-        comments_db[comment.parent_id] = parent_comment
+        data_manager.save_comment(parent_comment.model_dump())
     
     # Update post's comments count
-    post = posts_db[post_id]
+    post = data_manager.load_posts()[post_id]
     post.comments_count = (post.comments_count or 0) + 1
-    posts_db[post_id] = post
-    
-    # Save to persistent storage
-    comment_dict = comment.model_dump()
-    data_manager.save_comment(comment_dict)
-    
-    post_dict = post.model_dump()
-    data_manager.save_post(post_dict)
+    data_manager.save_post(post.model_dump())
     
     return comment
 
 @app.post("/api/comments/{comment_id}/react")
 async def react_to_comment(comment_id: str):
     """React to a comment (toggle reaction)"""
-    if comment_id not in comments_db:
+    if comment_id not in data_manager.load_comments():
         raise HTTPException(status_code=404, detail="Comment not found")
     
-    comment = comments_db[comment_id]
+    comment = data_manager.load_comments()[comment_id]
     
     # Toggle reaction
     if comment.user_reacted:
@@ -590,8 +540,7 @@ async def react_to_comment(comment_id: str):
         comment.user_reacted = True
     
     # Save to persistent storage
-    comment_dict = comment.model_dump()
-    data_manager.save_comment(comment_dict)
+    data_manager.save_comment(comment.model_dump())
     
     return {
         "message": "Reaction updated",
