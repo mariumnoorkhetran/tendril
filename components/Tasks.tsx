@@ -203,7 +203,7 @@ export default function Tasks() {
   const pendingTasks = tasks.filter(task => !task.completed);
 
   return (
-    <div className="m-8 max-w-5xl ">
+    <div className="m-8 max-w-5xl mx-auto">
       {/* Affirmation Toast */}
       {affirmation && (
         <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg bg-green-200 text-green-900 text-lg font-semibold shadow-lg animate-fade-in">

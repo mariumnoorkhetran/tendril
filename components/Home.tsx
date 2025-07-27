@@ -17,7 +17,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="m-8 max-w-5xl">
+    <div className="m-8 max-w-5xl mx-auto">
       {/* Header Section */}
       <div className="text-gray mb-8">
         <h1 className="text-4xl font-bold">

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Navbar() {
   return (
-    <section className="m-8 max-w-5xl">
+    <section className="m-8 max-w-5xl mx-auto">
 
         <nav className="w-full flex items-center justify-between p-4 bg-[#f9e4bc] text-gray rounded-md">    
             <Link href="/" className="flex items-center gap-2 hover:text-[#af5f5f] hover:scale-105 transition-all duration-200 cursor-pointer">

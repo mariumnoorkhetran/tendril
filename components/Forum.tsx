@@ -259,7 +259,7 @@ export default function Forum() {
   const myPosts = posts.filter(post => post.user_id === currentUserId);
 
   return (
-    <div className="m-8 max-w-5xl">
+    <div className="m-8 max-w-5xl mx-auto">
       {/* Header Section */}
       <div className="text-gray mb-8">
         <div className="flex justify-between items-start">
