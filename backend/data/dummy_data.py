@@ -132,44 +132,7 @@ DUMMY_TASKS = [
     }
 ]
 
-# Dummy Calendar Events Data
-DUMMY_EVENTS = [
-    {
-        "id": str(uuid.uuid4()),
-        "title": "Yoga Class",
-        "description": "Beginner-friendly yoga session at the community center",
-        "date": date.today() + timedelta(days=1),
-        "time": "09:00"
-    },
-    {
-        "id": str(uuid.uuid4()),
-        "title": "Wellness Workshop",
-        "description": "Learn about stress management techniques",
-        "date": date.today() + timedelta(days=3),
-        "time": "14:00"
-    },
-    {
-        "id": str(uuid.uuid4()),
-        "title": "Doctor Appointment",
-        "description": "Annual health checkup",
-        "date": date.today() + timedelta(days=5),
-        "time": "11:30"
-    },
-    {
-        "id": str(uuid.uuid4()),
-        "title": "Book Club Meeting",
-        "description": "Discuss this month's wellness book selection",
-        "date": date.today() + timedelta(days=7),
-        "time": "19:00"
-    },
-    {
-        "id": str(uuid.uuid4()),
-        "title": "Cooking Class",
-        "description": "Learn to prepare healthy, nutritious meals",
-        "date": date.today() + timedelta(days=10),
-        "time": "16:00"
-    }
-]
+
 
 # Dummy Forum Posts Data
 DUMMY_POSTS = [

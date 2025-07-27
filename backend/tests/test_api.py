@@ -77,45 +77,7 @@ def test_tasks_api():
         print(f"Tasks API test failed: {e}")
         return False
 
-def test_events_api():
-    """Test the events API endpoints"""
-    try:
-        print("\n--- Testing Events API ---")
-        
-        # Get initial events
-        response = requests.get(f"{BASE_URL}/api/events")
-        initial_count = len(response.json())
-        print(f"Initial events count: {initial_count}")
-        
-        # Create an event
-        event_data = {
-            "title": "Test Event",
-            "description": "This is a test event",
-            "date": "2024-12-25",
-            "time": "14:00"
-        }
-        
-        response = requests.post(f"{BASE_URL}/api/events", json=event_data)
-        print(f"Create event: {response.status_code}")
-        
-        if response.status_code == 200:
-            event = response.json()
-            event_id = event['id']
-            print(f"Created event with ID: {event_id}")
-            
-            # Get all events
-            response = requests.get(f"{BASE_URL}/api/events")
-            events = response.json()
-            print(f"Get events: {response.status_code} - {len(events)} events")
-            
-            return True
-        else:
-            print(f"Failed to create event: {response.text}")
-            return False
-            
-    except Exception as e:
-        print(f"Events API test failed: {e}")
-        return False
+
 
 def test_posts_api():
     """Test the posts API endpoints"""
@@ -323,7 +285,7 @@ if __name__ == "__main__":
     
     health_ok = test_health_check()
     tasks_ok = test_tasks_api()
-    events_ok = test_events_api()
+
     posts_ok = test_posts_api()
     calendar_ok = test_calendar_api()
     completion_ok = test_task_completion_tracking()
@@ -331,7 +293,7 @@ if __name__ == "__main__":
     persistence_ok = test_persistence()
     
     print("=" * 50)
-    if health_ok and tasks_ok and events_ok and posts_ok and calendar_ok and completion_ok and past_date_ok and persistence_ok:
+    if health_ok and tasks_ok and posts_ok and calendar_ok and completion_ok and past_date_ok and persistence_ok:
         print("✅ All tests passed!")
     else:
         print("❌ Some tests failed!") 

@@ -110,12 +110,7 @@ class Task(BaseModel):
     due_date: Optional[date] = None
     completion_history: Optional[Dict[str, bool]] = None  # Track completion by date
 
-class CalendarEvent(BaseModel):
-    id: Optional[str] = None
-    title: str
-    description: Optional[str] = None
-    date: date
-    time: Optional[str] = None
+
 
 class ForumPost(BaseModel):
     id: Optional[str] = None
@@ -181,7 +176,6 @@ compassionate_rewriter = CompassionateRewriter()
 # Initialize in-memory storage with data from files
 def initialize_data():
     tasks_db = {}
-    events_db = {}
     posts_db = {}
     comments_db = {}
     tips_db = {}
@@ -192,11 +186,7 @@ def initialize_data():
         task = Task(**task_data)
         tasks_db[task.id] = task
     
-    # Load events from file
-    events_data = data_manager.load_events()
-    for event_data in events_data:
-        event = CalendarEvent(**event_data)
-        events_db[event.id] = event
+
     
     # Load posts from file
     posts_data = data_manager.load_posts()
@@ -216,10 +206,10 @@ def initialize_data():
         tip = Tip(**tip_data)
         tips_db[tip.id] = tip
     
-    return tasks_db, events_db, posts_db, comments_db, tips_db
+    return tasks_db, posts_db, comments_db, tips_db
 
 # Initialize databases
-tasks_db, events_db, posts_db, comments_db, tips_db = initialize_data()
+tasks_db, posts_db, comments_db, tips_db = initialize_data()
 
 # Health check endpoint
 @app.get("/")
@@ -296,21 +286,7 @@ async def delete_task(task_id: str):
     
     return {"message": "Task deleted"}
 
-# Calendar endpoints
-@app.get("/api/events", response_model=List[CalendarEvent])
-async def get_events():
-    return list(events_db.values())
 
-@app.post("/api/events", response_model=CalendarEvent)
-async def create_event(event: CalendarEvent):
-    event.id = str(uuid.uuid4())
-    events_db[event.id] = event
-    
-    # Save to persistent storage
-    event_dict = event.model_dump()
-    data_manager.save_event(event_dict)
-    
-    return event
 
 # New calendar endpoint for date-specific tasks
 @app.get("/api/calendar/{target_date}", response_model=CalendarDayResponse)

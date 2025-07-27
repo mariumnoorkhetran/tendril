@@ -10,13 +10,7 @@ export interface Task {
   completion_history?: Record<string, boolean>;  // New field for tracking completion by date
 }
 
-export interface CalendarEvent {
-  id?: string;  // Changed from number to string (UUID)
-  title: string;
-  description?: string;
-  date: string;
-  time?: string;
-}
+
 
 export interface ForumPost {
   id?: string;  // Changed from number to string (UUID)
@@ -147,17 +141,7 @@ class ApiClient {
     });
   }
 
-  // Calendar Events API
-  async getEvents(): Promise<CalendarEvent[]> {
-    return this.request<CalendarEvent[]>('/api/events');
-  }
 
-  async createEvent(event: Omit<CalendarEvent, 'id'>): Promise<CalendarEvent> {
-    return this.request<CalendarEvent>('/api/events', {
-      method: 'POST',
-      body: JSON.stringify(event),
-    });
-  }
 
   // Forum Posts API
   async getPosts(): Promise<ForumPost[]> {
@@ -285,9 +269,7 @@ export const api = {
   getCalendarDay: (date: string) => apiClient.getCalendarDay(date),
   updateTaskCompletion: (taskId: string, date: string, completed: boolean) => apiClient.updateTaskCompletion(taskId, date, completed),
   
-  // Events
-  getEvents: () => apiClient.getEvents(),
-  createEvent: (event: Omit<CalendarEvent, 'id'>) => apiClient.createEvent(event),
+
   
   // Posts
   getPosts: () => apiClient.getPosts(),

@@ -1,12 +1,11 @@
 import json
 from datetime import datetime, date
 from typing import Dict, List, Any
-from .dummy_data import DUMMY_TASKS, DUMMY_EVENTS, DUMMY_POSTS, DUMMY_STREAK, DUMMY_TIPS
+from .dummy_data import DUMMY_TASKS, DUMMY_POSTS, DUMMY_STREAK, DUMMY_TIPS
 
 class DataManager:
     def __init__(self):
         self.tasks_file = "database/tasks.json"
-        self.events_file = "database/events.json"
         self.posts_file = "database/posts.json"
         self.comments_file = "database/comments.json"
         self.streak_file = "database/streak.json"
@@ -25,9 +24,6 @@ class DataManager:
         
         if not os.path.exists(self.tasks_file):
             self._save_tasks(DUMMY_TASKS)
-        
-        if not os.path.exists(self.events_file):
-            self._save_events(DUMMY_EVENTS)
         
         if not os.path.exists(self.posts_file):
             self._save_posts(DUMMY_POSTS)
@@ -64,10 +60,7 @@ class DataManager:
         with open(self.tasks_file, 'w') as f:
             json.dump(tasks_data, f, default=self._serialize_datetime, indent=2)
     
-    def _save_events(self, events_data: List[Dict[str, Any]]):
-        """Save events data to JSON file"""
-        with open(self.events_file, 'w') as f:
-            json.dump(events_data, f, default=self._serialize_datetime, indent=2)
+
     
     def _save_posts(self, posts_data: List[Dict[str, Any]]):
         """Save posts data to JSON file"""
@@ -98,14 +91,7 @@ class DataManager:
         except FileNotFoundError:
             return DUMMY_TASKS
     
-    def load_events(self) -> List[Dict[str, Any]]:
-        """Load events from JSON file"""
-        try:
-            with open(self.events_file, 'r') as f:
-                data = json.load(f)
-                return [self._deserialize_datetime(event) for event in data]
-        except FileNotFoundError:
-            return DUMMY_EVENTS
+
     
     def load_posts(self) -> List[Dict[str, Any]]:
         """Load posts from JSON file"""
@@ -168,24 +154,7 @@ class DataManager:
         tasks = [task for task in tasks if task.get('id') != task_id]
         self._save_tasks(tasks)
     
-    def save_event(self, event_data: Dict[str, Any]):
-        """Save a single event to the database"""
-        events = self.load_events()
-        
-        # Find and update existing event or add new one
-        event_id = event_data.get('id')
-        event_found = False
-        
-        for i, event in enumerate(events):
-            if event.get('id') == event_id:
-                events[i] = event_data
-                event_found = True
-                break
-        
-        if not event_found:
-            events.append(event_data)
-        
-        self._save_events(events)
+
     
     def save_post(self, post_data: Dict[str, Any]):
         """Save a single post to the database"""
