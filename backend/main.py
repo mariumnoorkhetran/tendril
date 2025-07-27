@@ -7,6 +7,7 @@ import uvicorn
 import uuid
 from data.data_manager import DataManager
 from data.streak_manager import StreakManager
+from data.compassionate_rewriter import CompassionateRewriter
 
 app = FastAPI(title="Tendril Wellness API", version="1.0.0")
 
@@ -75,6 +76,9 @@ class Tip(BaseModel):
     created_at: Optional[datetime] = None
     is_featured: bool = False
 
+class PostAnalysisRequest(BaseModel):
+    content: str
+
 # Calendar response model for date-specific tasks
 class CalendarDayResponse(BaseModel):
     date: date
@@ -86,6 +90,7 @@ class CalendarDayResponse(BaseModel):
 # Initialize data manager and streak manager
 data_manager = DataManager()
 streak_manager = StreakManager(data_manager)
+compassionate_rewriter = CompassionateRewriter()
 
 # Initialize in-memory storage with data from files
 def initialize_data():
@@ -356,6 +361,12 @@ async def get_post(post_id: str):
     if post_id not in posts_db:
         raise HTTPException(status_code=404, detail="Post not found")
     return posts_db[post_id]
+
+@app.post("/api/posts/analyze")
+async def analyze_post_content(request: PostAnalysisRequest):
+    """Analyze post content for negative words and suggest compassionate rewriting"""
+    analysis = compassionate_rewriter.analyze_and_suggest_rewrite(request.content)
+    return analysis
 
 @app.post("/api/posts", response_model=ForumPost)
 async def create_post(post: ForumPost):

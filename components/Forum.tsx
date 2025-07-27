@@ -27,6 +27,12 @@ export default function Forum() {
   const [newTipContent, setNewTipContent] = useState("");
   const [submittingTip, setSubmittingTip] = useState(false);
 
+  // Compassionate rewriting state
+  const [showRewritingSuggestion, setShowRewritingSuggestion] = useState(false);
+  const [rewrittenContent, setRewrittenContent] = useState("");
+  const [analyzingContent, setAnalyzingContent] = useState(false);
+  const [useRewrittenContent, setUseRewrittenContent] = useState(false);
+
   // Load posts from backend
   const loadPosts = async () => {
     try {
@@ -40,6 +46,48 @@ export default function Forum() {
     }
   };
 
+  // Analyze content for negative words
+  const analyzeContent = async (content: string) => {
+    if (!content.trim()) return;
+    
+    try {
+      setAnalyzingContent(true);
+      const analysis = await api.analyzePostContent(content);
+      
+      if (analysis.contains_negative_words && analysis.suggestion_available) {
+        setRewrittenContent(analysis.rewritten_text || "");
+        setShowRewritingSuggestion(true);
+      }
+    } catch (error) {
+      console.error('Failed to analyze content:', error);
+    } finally {
+      setAnalyzingContent(false);
+    }
+  };
+
+  // Handle content change with analysis
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const content = e.target.value;
+    setNewPostContent(content);
+    
+    // If user is editing after seeing a suggestion, re-analyze immediately
+    if (showRewritingSuggestion) {
+      // Clear the suggestion if user starts editing
+      setShowRewritingSuggestion(false);
+      setUseRewrittenContent(false);
+      setRewrittenContent("");
+    }
+    
+    // Analyze content when user stops typing (debounced)
+    const timeoutId = setTimeout(() => {
+      if (content.trim()) {
+        analyzeContent(content);
+      }
+    }, 1000);
+    
+    return () => clearTimeout(timeoutId);
+  };
+
   // Create new post
   const createPost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,11 +97,21 @@ export default function Forum() {
       return;
     }
 
+    // Check if the content to be posted contains negative words
+    const contentToPost = useRewrittenContent ? rewrittenContent : newPostContent;
+    const analysis = await api.analyzePostContent(contentToPost);
+    
+    if (analysis.contains_negative_words) {
+      alert('Your post contains negative self-talk. Please either:\n\n1. Use the compassionate version above, OR\n2. Edit your message to remove negative words\n\nThis helps create a supportive community environment.');
+      return;
+    }
+
     try {
       setSubmitting(true);
+      
       const postData = {
         title: newPostTitle,
-        content: newPostContent,
+        content: contentToPost,
         user_id: getUserId(),
       };
       console.log('Sending post data:', postData);
@@ -62,6 +120,9 @@ export default function Forum() {
       setPosts([newPost, ...posts]);
       setNewPostTitle("");
       setNewPostContent("");
+      setShowRewritingSuggestion(false);
+      setRewrittenContent("");
+      setUseRewrittenContent(false);
       setActiveTab("all-posts"); // Switch to all posts tab to show the new post
     } catch (error) {
       console.error('Failed to create post:', error);
@@ -245,22 +306,91 @@ export default function Forum() {
                   <textarea
                     placeholder="Write your post content here..."
                     value={newPostContent}
-                    onChange={(e) => setNewPostContent(e.target.value)}
+                    onChange={handleContentChange}
                     rows={6}
                     className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
                     required
                   />
+                  {analyzingContent && (
+                    <div className="mt-2 text-sm text-gray-600 flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#af5f5f] mr-2"></div>
+                      Analyzing your content...
+                    </div>
+                  )}
                 </div>
+
+                {/* Compassionate Rewriting Suggestion */}
+                {showRewritingSuggestion && (
+                  <div className="bg-[#fef7f0] border border-[#af5f5f] rounded-lg p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#af5f5f] text-lg">💝</span>
+                      <h4 className="font-semibold text-gray">Compassionate Suggestion</h4>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      We noticed some self-critical language in your post. To create a supportive community, please either:
+                    </p>
+                    <div className="bg-white rounded-lg p-3 border">
+                      <p className="text-gray-700 text-sm whitespace-pre-wrap">{rewrittenContent}</p>
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setUseRewrittenContent(true)}
+                        className={`px-4 py-2 rounded-lg transition-colors text-sm ${
+                          useRewrittenContent 
+                            ? 'bg-green-600 text-white' 
+                            : 'bg-[#af5f5f] text-white hover:bg-[#af5f5f]/90'
+                        }`}
+                      >
+                        {useRewrittenContent ? '✓ Using This Version' : 'Use This Version'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowRewritingSuggestion(false);
+                          setUseRewrittenContent(false);
+                        }}
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors text-sm"
+                      >
+                        Edit Original
+                      </button>
+                    </div>
+                    <div className="text-xs text-gray-500 bg-yellow-50 p-2 rounded">
+                      💡 <strong>Note:</strong> You must either use the compassionate version above or edit your message to remove negative words before posting.
+                    </div>
+                  </div>
+                )}
+
+                {/* Warning if negative words are still present and user hasn't chosen compassionate version */}
+                {showRewritingSuggestion && !useRewrittenContent && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <div className="flex items-center gap-2 text-red-700">
+                      <span>⚠️</span>
+                      <span className="text-sm font-medium">Your message still contains negative self-talk</span>
+                    </div>
+                    <p className="text-xs text-red-600 mt-1">
+                      Please either use the compassionate version above or edit your message to remove negative words.
+                    </p>
+                  </div>
+                )}
+
                 <button 
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || (showRewritingSuggestion && !useRewrittenContent)}
                   className={`px-6 py-2 rounded-lg transition-colors ${
                     submitting 
                       ? 'bg-gray-400 cursor-not-allowed' 
+                      : showRewritingSuggestion && !useRewrittenContent
+                      ? 'bg-red-500 cursor-not-allowed'
                       : 'bg-[#af5f5f] hover:bg-[#af5f5f]/90'
                   } text-white cursor-pointer`}
                 >
-                  {submitting ? 'Publishing...' : 'Publish Post'}
+                  {submitting 
+                    ? 'Publishing...' 
+                    : showRewritingSuggestion && !useRewrittenContent
+                    ? 'Please Choose Version First'
+                    : 'Publish Post'
+                  }
                 </button>
               </form>
             </div>

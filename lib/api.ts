@@ -168,6 +168,19 @@ class ApiClient {
     return this.request<ForumPost>(`/api/posts/${postId}`);
   }
 
+  async analyzePostContent(content: string): Promise<{
+    contains_negative_words: boolean;
+    found_words: string[];
+    suggestion_available: boolean;
+    rewritten_text: string | null;
+    error: string | null;
+  }> {
+    return this.request('/api/posts/analyze', {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    });
+  }
+
   async createPost(post: Omit<ForumPost, 'id' | 'created_at'>): Promise<ForumPost> {
     return this.request<ForumPost>('/api/posts', {
       method: 'POST',
@@ -256,6 +269,7 @@ export const api = {
   // Posts
   getPosts: () => apiClient.getPosts(),
   getPost: (postId: string) => apiClient.getPost(postId),
+  analyzePostContent: (content: string) => apiClient.analyzePostContent(content),
   createPost: (post: Omit<ForumPost, 'id' | 'created_at'>) => apiClient.createPost(post),
   reactToPost: (postId: string) => apiClient.reactToPost(postId),
   
