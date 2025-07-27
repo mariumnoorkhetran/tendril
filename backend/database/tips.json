@@ -1,0 +1,91 @@
+[
+  {
+    "id": "eb05bd92-791c-45d6-acec-14566ac784b4",
+    "title": "Start Your Day with Hydration",
+    "content": "Drink a glass of water first thing in the morning to kickstart your metabolism and rehydrate after sleep. Add lemon for extra benefits!",
+    "author": "Dr. Sarah Wellness",
+    "category": "Hydration",
+    "likes": 42,
+    "created_at": "2025-07-26T02:54:32.444682",
+    "is_featured": true
+  },
+  {
+    "id": "95434497-4568-43dc-b60a-5a654d1194bf",
+    "title": "5-Minute Morning Stretch Routine",
+    "content": "Before getting out of bed, try these gentle stretches: cat-cow pose, gentle twists, and ankle rotations. It helps wake up your body naturally.",
+    "author": "Yoga Master Mike",
+    "category": "Exercise",
+    "likes": 38,
+    "created_at": "2025-07-25T02:54:32.444833",
+    "is_featured": true
+  },
+  {
+    "id": "3d0a46b2-c8eb-4a06-885f-8f3038878035",
+    "title": "Mindful Eating Habits",
+    "content": "Take time to chew your food slowly and savor each bite. This not only improves digestion but also helps you feel more satisfied with smaller portions.",
+    "author": "Nutrition Expert Lisa",
+    "category": "Nutrition",
+    "likes": 35,
+    "created_at": "2025-07-24T02:54:32.444862",
+    "is_featured": false
+  },
+  {
+    "id": "07a25fff-0fc5-4cbd-84a3-366fc2c90dd6",
+    "title": "Digital Detox Before Bed",
+    "content": "Avoid screens 30 minutes before bedtime. The blue light can interfere with your sleep cycle. Try reading a book instead!",
+    "author": "Sleep Coach David",
+    "category": "Sleep",
+    "likes": 29,
+    "created_at": "2025-07-23T02:54:32.444876",
+    "is_featured": false
+  },
+  {
+    "id": "c885136c-0680-4a8f-840e-eaa8c7eb5ff2",
+    "title": "Gratitude Journal Practice",
+    "content": "Write down 3 things you're grateful for each day. This simple practice can significantly improve your mental well-being and outlook on life.",
+    "author": "Mental Health Advocate Emma",
+    "category": "Mental Health",
+    "likes": 31,
+    "created_at": "2025-07-22T02:54:32.444890",
+    "is_featured": true
+  },
+  {
+    "id": "a376ab9a-b16b-4494-b5b5-95caf9abe8a5",
+    "title": "Walking Meetings",
+    "content": "Instead of sitting in a conference room, try walking meetings. You'll get exercise, fresh air, and often more creative ideas flow when moving.",
+    "author": "Productivity Guru Alex",
+    "category": "Work-Life Balance",
+    "likes": 27,
+    "created_at": "2025-07-21T02:54:32.444901",
+    "is_featured": false
+  },
+  {
+    "id": "57a66d22-d4d2-4bde-9bab-c12721a53834",
+    "title": "Wake up early",
+    "content": "It keeps the mood good for the remaining day",
+    "author": "Community Member",
+    "category": "Wellness",
+    "likes": 0,
+    "created_at": "2025-07-27T03:04:57.187466",
+    "is_featured": false
+  },
+  {
+    "id": "6f80bdb2-f966-4476-9fde-b1930f802856",
+    "title": "Wellness Tip",
+    "content": "wake up early",
+    "author": "Community Member",
+    "category": "Wellness",
+    "likes": 0,
+    "created_at": "2025-07-27T04:02:37.397348",
+    "is_featured": false
+  },
+  {
+    "id": "4d2b2c6c-96e0-4a36-93a0-5418f3b4a110",
+    "content": "testing",
+    "author": "Community Member",
+    "category": "Wellness",
+    "likes": 0,
+    "created_at": "2025-07-27T04:09:08.531661",
+    "is_featured": false
+  }
+]
