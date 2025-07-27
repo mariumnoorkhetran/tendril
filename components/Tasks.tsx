@@ -10,6 +10,10 @@ export default function Tasks() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [editTaskTitle, setEditTaskTitle] = useState('');
+  const [editTaskDescription, setEditTaskDescription] = useState('');
+  const [editTaskDueDate, setEditTaskDueDate] = useState('');
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -72,6 +76,53 @@ export default function Tasks() {
       setNewTaskDueDate('');
     } catch (error) {
       console.error('Failed to create task:', error);
+    }
+  };
+
+  const startEditing = (task: Task) => {
+    setEditingTaskId(task.id!);
+    setEditTaskTitle(task.title);
+    setEditTaskDescription(task.description || '');
+    setEditTaskDueDate(task.due_date || '');
+  };
+
+  const cancelEditing = () => {
+    setEditingTaskId(null);
+    setEditTaskTitle('');
+    setEditTaskDescription('');
+    setEditTaskDueDate('');
+  };
+
+  const updateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTaskId || !editTaskTitle.trim()) return;
+
+    // Validate due date - should not be in the past
+    if (editTaskDueDate) {
+      const selectedDate = new Date(editTaskDueDate + 'T00:00:00');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDate < today) {
+        alert('Due date cannot be in the past. Please select today or a future date.');
+        return;
+      }
+    }
+
+    try {
+      const updatedTask = await api.updateTask(editingTaskId, {
+        id: editingTaskId,
+        title: editTaskTitle,
+        description: editTaskDescription || undefined,
+        completed: tasks.find(t => t.id === editingTaskId)?.completed || false,
+        due_date: editTaskDueDate || undefined,
+        completion_history: tasks.find(t => t.id === editingTaskId)?.completion_history || {},
+      });
+      
+      setTasks(tasks.map(t => t.id === editingTaskId ? updatedTask : t));
+      cancelEditing();
+    } catch (error) {
+      console.error('Failed to update task:', error);
     }
   };
 
@@ -142,8 +193,6 @@ export default function Tasks() {
         </p>
       </div>
 
-
-
       {/* Add New Task Form */}
       <div className="bg-[#f9e4bc] rounded-lg p-6 shadow-sm mb-8">
         <h2 className="text-2xl font-semibold text-gray mb-4">
@@ -206,32 +255,92 @@ export default function Tasks() {
           ) : (
             <ul className="space-y-3">
               {pendingTasks.map((task) => (
-                <li key={task.id} className="text-gray flex items-center justify-between p-3 bg-gray-50 rounded-md">
-                  <div className="flex items-center flex-1">
-                    <button
-                      onClick={() => toggleTask(task)}
-                      className="w-4 h-4 border-2 border-gray-600 rounded mr-3 hover:border-gray-400 cursor-pointer"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium">{task.title}</div>
-                      {task.description && (
-                        <div className="text-sm text-gray-500">{task.description}</div>
-                      )}
-                      <div className="flex items-center gap-2 mt-1">
-                        {task.due_date && (
-                          <span className="text-xs text-gray-500">
-                            Due: {formatDate(task.due_date)}
-                          </span>
-                        )}
+                <li key={task.id} className="text-gray p-3 bg-gray-50 rounded-md">
+                  {editingTaskId === task.id ? (
+                    // Edit Form
+                    <form onSubmit={updateTask} className="space-y-3">
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="Task title"
+                          value={editTaskTitle}
+                          onChange={(e) => setEditTaskTitle(e.target.value)}
+                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <textarea
+                          placeholder="Task description (optional)"
+                          value={editTaskDescription}
+                          onChange={(e) => setEditTaskDescription(e.target.value)}
+                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                          rows={2}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Due Date (Today or Future)
+                        </label>
+                        <input
+                          type="date"
+                          value={editTaskDueDate}
+                          onChange={(e) => setEditTaskDueDate(e.target.value)}
+                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                          min={getTodayDateString()}
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="submit" className="bg-[#af5f5f] hover:bg-[#af5f5f]/90">
+                          Save
+                        </Button>
+                        <Button 
+                          type="button" 
+                          onClick={cancelEditing}
+                          className="bg-gray-500 hover:bg-gray-600"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  ) : (
+                    // Task Display
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center flex-1">
+                        <button
+                          onClick={() => toggleTask(task)}
+                          className="w-4 h-4 border-2 border-gray-600 rounded mr-3 hover:border-gray-400 cursor-pointer"
+                        />
+                        <div className="flex-1">
+                          <div className="font-medium">{task.title}</div>
+                          {task.description && (
+                            <div className="text-sm text-gray-500">{task.description}</div>
+                          )}
+                          <div className="flex items-center gap-2 mt-1">
+                            {task.due_date && (
+                              <span className="text-xs text-gray-500">
+                                Due: {formatDate(task.due_date)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => startEditing(task)}
+                          className="text-blue-500 hover:text-blue-700 text-sm cursor-pointer"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteTask(task.id!)}
+                          className="text-red-500 hover:text-red-700 text-sm cursor-pointer"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </div>
-                  </div>
-                  <button
-                    onClick={() => deleteTask(task.id!)}
-                    className="text-red-500 hover:text-red-700 text-sm ml-2 cursor-pointer"
-                  >
-                    Delete
-                  </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -250,34 +359,94 @@ export default function Tasks() {
           ) : (
             <ul className="space-y-3">
               {completedTasks.map((task) => (
-                <li key={task.id} className="text-gray flex items-center justify-between p-3 bg-green-50 rounded-md">
-                  <div className="flex items-center flex-1">
-                    <button
-                      onClick={() => toggleTask(task)}
-                      className="w-4 h-4 bg-green-500 rounded mr-3 flex items-center justify-center cursor-pointer"
-                    >
-                      <span className="text-white text-xs">✓</span>
-                    </button>
-                    <div className="flex-1">
-                      <div className="font-medium line-through">{task.title}</div>
-                      {task.description && (
-                        <div className="text-sm text-gray-500 line-through">{task.description}</div>
-                      )}
-                      <div className="flex items-center gap-2 mt-1">
-                        {task.due_date && (
-                          <span className="text-xs text-gray-500">
-                            Due: {formatDate(task.due_date)}
-                          </span>
-                        )}
+                <li key={task.id} className="text-gray p-3 bg-green-50 rounded-md">
+                  {editingTaskId === task.id ? (
+                    // Edit Form
+                    <form onSubmit={updateTask} className="space-y-3">
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="Task title"
+                          value={editTaskTitle}
+                          onChange={(e) => setEditTaskTitle(e.target.value)}
+                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <textarea
+                          placeholder="Task description (optional)"
+                          value={editTaskDescription}
+                          onChange={(e) => setEditTaskDescription(e.target.value)}
+                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                          rows={2}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Due Date (Today or Future)
+                        </label>
+                        <input
+                          type="date"
+                          value={editTaskDueDate}
+                          onChange={(e) => setEditTaskDueDate(e.target.value)}
+                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                          min={getTodayDateString()}
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="submit" className="bg-[#af5f5f] hover:bg-[#af5f5f]/90">
+                          Save
+                        </Button>
+                        <Button 
+                          type="button" 
+                          onClick={cancelEditing}
+                          className="bg-gray-500 hover:bg-gray-600"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  ) : (
+                    // Task Display
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center flex-1">
+                        <button
+                          onClick={() => toggleTask(task)}
+                          className="w-4 h-4 bg-green-500 rounded mr-3 flex items-center justify-center cursor-pointer"
+                        >
+                          <span className="text-white text-xs">✓</span>
+                        </button>
+                        <div className="flex-1">
+                          <div className="font-medium line-through">{task.title}</div>
+                          {task.description && (
+                            <div className="text-sm text-gray-500 line-through">{task.description}</div>
+                          )}
+                          <div className="flex items-center gap-2 mt-1">
+                            {task.due_date && (
+                              <span className="text-xs text-gray-500">
+                                Due: {formatDate(task.due_date)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => startEditing(task)}
+                          className="text-blue-500 hover:text-blue-700 text-sm cursor-pointer"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteTask(task.id!)}
+                          className="text-red-500 hover:text-red-700 text-sm cursor-pointer"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </div>
-                  </div>
-                  <button
-                    onClick={() => deleteTask(task.id!)}
-                    className="text-red-500 hover:text-red-700 text-sm ml-2 cursor-pointer"
-                  >
-                    Delete
-                  </button>
+                  )}
                 </li>
               ))}
             </ul>
