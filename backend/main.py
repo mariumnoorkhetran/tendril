@@ -491,65 +491,97 @@ async def react_to_post(post_id: str):
 @app.get("/api/posts/{post_id}/comments", response_model=List[Comment])
 async def get_comments(post_id: str):
     """Get all comments for a specific post"""
-    if post_id not in data_manager.load_posts():
+    posts = data_manager.load_posts()
+    if not any(post.get("id") == post_id for post in posts):
         raise HTTPException(status_code=404, detail="Post not found")
     
     # Filter comments by post_id and organize them in a threaded structure
-    post_comments = [comment for comment in data_manager.load_comments() if comment.post_id == post_id]
+    post_comments = [comment for comment in data_manager.load_comments() if comment.get("post_id") == post_id]
     return post_comments
 
 @app.post("/api/posts/{post_id}/comments", response_model=Comment)
 async def create_comment(post_id: str, comment: Comment):
     """Create a new comment on a post"""
-    if post_id not in data_manager.load_posts():
+    print(f"Creating comment for post: {post_id}")
+    print(f"Comment data: {comment.model_dump()}")
+    
+    posts = data_manager.load_posts()
+    if not any(post.get("id") == post_id for post in posts):
         raise HTTPException(status_code=404, detail="Post not found")
     
     # Validate parent_id if provided
-    if comment.parent_id and comment.parent_id not in data_manager.load_comments():
-        raise HTTPException(status_code=404, detail="Parent comment not found")
+    if comment.parent_id:
+        comments = data_manager.load_comments()
+        if not any(c.get("id") == comment.parent_id for c in comments):
+            raise HTTPException(status_code=404, detail="Parent comment not found")
     
+    # Prepare comment data
     comment.id = str(uuid.uuid4())
     comment.post_id = post_id
     comment.created_at = datetime.now()
-    data_manager.save_comment(comment.model_dump())
+    
+    # Convert to dict and ensure all fields are present
+    comment_dict = comment.model_dump()
+    comment_dict.update({
+        "id": comment.id,
+        "post_id": comment.post_id,
+        "created_at": comment.created_at,
+        "replies_count": comment.replies_count or 0,
+        "reactions_count": comment.reactions_count or 0,
+        "user_reacted": comment.user_reacted or False
+    })
+    
+    print(f"Saving comment: {comment_dict}")
+    
+    # Save the comment
+    data_manager.save_comment(comment_dict)
+    
+    # Verify the comment was saved
+    all_comments = data_manager.load_comments()
+    saved_comment = next((c for c in all_comments if c.get("id") == comment.id), None)
+    print(f"Comment saved successfully: {saved_comment is not None}")
     
     # Update parent comment's replies count if this is a reply
     if comment.parent_id:
-        parent_comment = data_manager.load_comments()[comment.parent_id]
-        parent_comment.replies_count = (parent_comment.replies_count or 0) + 1
-        data_manager.save_comment(parent_comment.model_dump())
-    
+        comments = data_manager.load_comments()
+        parent_comment = next((c for c in comments if c.get("id") == comment.parent_id), None)
+        if parent_comment:
+            parent_comment["replies_count"] = (parent_comment.get("replies_count") or 0) + 1
+            data_manager.save_comment(parent_comment)
+
     # Update post's comments count
-    post = data_manager.load_posts()[post_id]
-    post.comments_count = (post.comments_count or 0) + 1
-    data_manager.save_post(post.model_dump())
+    posts = data_manager.load_posts()
+    post = next((p for p in posts if p.get("id") == post_id), None)
+    if post:
+        post["comments_count"] = (post.get("comments_count") or 0) + 1
+        data_manager.save_post(post)
     
     return comment
 
 @app.post("/api/comments/{comment_id}/react")
 async def react_to_comment(comment_id: str):
     """React to a comment (toggle reaction)"""
-    if comment_id not in data_manager.load_comments():
+    comments = data_manager.load_comments()
+    comment = next((c for c in comments if c.get("id") == comment_id), None)
+    if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
     
-    comment = data_manager.load_comments()[comment_id]
-    
     # Toggle reaction
-    if comment.user_reacted:
-        comment.reactions_count = max(0, (comment.reactions_count or 0) - 1)
-        comment.user_reacted = False
+    if comment.get("user_reacted"):
+        comment["reactions_count"] = max(0, (comment.get("reactions_count") or 0) - 1)
+        comment["user_reacted"] = False
     else:
-        comment.reactions_count = (comment.reactions_count or 0) + 1
-        comment.user_reacted = True
+        comment["reactions_count"] = (comment.get("reactions_count") or 0) + 1
+        comment["user_reacted"] = True
     
     # Save to persistent storage
-    data_manager.save_comment(comment.model_dump())
+    data_manager.save_comment(comment)
     
     return {
         "message": "Reaction updated",
         "comment_id": comment_id,
-        "reactions_count": comment.reactions_count,
-        "user_reacted": comment.user_reacted
+        "reactions_count": comment["reactions_count"],
+        "user_reacted": comment["user_reacted"]
     }
 
 if __name__ == "__main__":

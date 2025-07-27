@@ -158,5 +158,23 @@
     "likes": 0,
     "created_at": "2025-07-27T20:49:07.770594",
     "is_featured": false
+  },
+  {
+    "id": "61fe0ebd-f415-4759-b749-461bf5778890",
+    "content": "struggling with body image and energy levels\n\n",
+    "author": "Community Member",
+    "category": "Wellness",
+    "likes": 0,
+    "created_at": "2025-07-27T21:24:12.121694",
+    "is_featured": false
+  },
+  {
+    "id": "12c6ccf2-50e7-4150-8649-a6d8ce83c169",
+    "content": "Divide tasks into subtasks",
+    "author": "Community Member",
+    "category": "Wellness",
+    "likes": 0,
+    "created_at": "2025-07-27T21:24:58.745850",
+    "is_featured": false
   }
 ]

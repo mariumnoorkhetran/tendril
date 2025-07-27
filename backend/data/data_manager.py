@@ -46,13 +46,33 @@ class DataManager:
     def _deserialize_datetime(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Convert ISO datetime strings back to datetime objects"""
         if 'created_at' in data and data['created_at']:
-            data['created_at'] = datetime.fromisoformat(data['created_at'])
+            if isinstance(data['created_at'], str):
+                try:
+                    data['created_at'] = datetime.fromisoformat(data['created_at'])
+                except ValueError:
+                    # If it's not a valid ISO format, keep it as string
+                    pass
         if 'due_date' in data and data['due_date']:
-            data['due_date'] = date.fromisoformat(data['due_date'])
+            if isinstance(data['due_date'], str):
+                try:
+                    data['due_date'] = date.fromisoformat(data['due_date'])
+                except ValueError:
+                    # If it's not a valid ISO format, keep it as string
+                    pass
         if 'date' in data and data['date']:
-            data['date'] = date.fromisoformat(data['date'])
+            if isinstance(data['date'], str):
+                try:
+                    data['date'] = date.fromisoformat(data['date'])
+                except ValueError:
+                    # If it's not a valid ISO format, keep it as string
+                    pass
         if 'last_completion_date' in data and data['last_completion_date']:
-            data['last_completion_date'] = date.fromisoformat(data['last_completion_date'])
+            if isinstance(data['last_completion_date'], str):
+                try:
+                    data['last_completion_date'] = date.fromisoformat(data['last_completion_date'])
+                except ValueError:
+                    # If it's not a valid ISO format, keep it as string
+                    pass
         return data
     
     def _save_tasks(self, tasks_data: List[Dict[str, Any]]):
@@ -215,18 +235,27 @@ class DataManager:
     
     def save_comment(self, comment_data: Dict[str, Any]):
         """Save a single comment to JSON file"""
+        print(f"save_comment called with: {comment_data}")
         comments = self.load_comments()
+        print(f"Loaded {len(comments)} existing comments")
         
         # Update existing comment or add new one
         comment_id = comment_data.get('id')
+        comment_found = False
+        
         if comment_id:
             # Update existing comment
             for i, comment in enumerate(comments):
                 if comment.get('id') == comment_id:
                     comments[i] = comment_data
+                    comment_found = True
+                    print(f"Updated existing comment at index {i}")
                     break
-        else:
+        
+        if not comment_found:
             # Add new comment
             comments.append(comment_data)
+            print(f"Added new comment. Total comments now: {len(comments)}")
         
-        self._save_comments(comments) 
+        self._save_comments(comments)
+        print(f"Saved {len(comments)} comments to file") 
