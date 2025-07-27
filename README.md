@@ -12,38 +12,11 @@ For people struggling with mental health issues or chronic pain, maintaining hyg
 
 ## How Tendril Helps
 
-- Sends gentle task reminders
+- Logs tasks at your pace and comfort
 - Tracks a **“tender streak”** — a streak that *pauses* instead of breaking
 - Offers an **anonymous forum** where users can share feelings and tips
 - Rewrites posts/comments gently using AI, flagging harsh self-talk (e.g. "lazy" → "struggling")
-- Delivers a **daily affirmation** through a calming loading screen
-
----
-
-## Features
-
-- Pastel-themed hygiene checklist
-- Streak tracker that **pauses**, not punishes
-- Daily “Tip of the Day” affirmation via AI
-- Anonymous post and comment board
-- AI moderation: softens harmful self-talk using compassionate rewrites
-
----
-
-## Screenshots
-
-*(Add screenshots from the task page, affirmation loader, and forum page here)*
-
-| Task Page | Affirmation Screen | Forum |
-|-----------|--------------------|-------|
-| ![](./screenshots/task.png) | ![](./screenshots/affirmation.png) | ![](./screenshots/forum.png) |
-
----
-
-## Demo
-
-**[🔗 Click here to try Tendril](https://your-vercel-link.vercel.app/)**  
-*(Make sure to replace this with your actual deployed Vercel link)*
+- Delivers hot tips from the community forum on the homepage
 
 ---
 
