@@ -82,14 +82,14 @@ class DataManager:
         with open(self.tips_file, 'w') as f:
             json.dump(tips_data, f, default=self._serialize_datetime, indent=2)
     
-    def load_tasks(self) -> List[Dict[str, Any]]:
-        """Load tasks from JSON file"""
+    def load_tasks(self, user_id: str) -> List[Dict[str, Any]]:
+        """Load tasks for a specific user from JSON file"""
         try:
             with open(self.tasks_file, 'r') as f:
                 data = json.load(f)
-                return [self._deserialize_datetime(task) for task in data]
+                return [self._deserialize_datetime(task) for task in data if task.get('user_id') == user_id]
         except FileNotFoundError:
-            return DUMMY_TASKS
+            return []
     
 
     
@@ -111,14 +111,14 @@ class DataManager:
         except FileNotFoundError:
             return []
     
-    def load_streak(self) -> Dict[str, Any]:
-        """Load streak data from JSON file"""
+    def load_streak(self, user_id: str) -> Dict[str, Any]:
+        """Load streak data for a specific user from JSON file"""
         try:
             with open(self.streak_file, 'r') as f:
                 data = json.load(f)
-                return self._deserialize_datetime(data)
+                return self._deserialize_datetime(data.get(user_id, {}))
         except FileNotFoundError:
-            return DUMMY_STREAK
+            return {}
     
     def load_tips(self) -> List[Dict[str, Any]]:
         """Load tips from JSON file"""
@@ -130,29 +130,37 @@ class DataManager:
             return DUMMY_TIPS
     
     def save_task(self, task_data: Dict[str, Any]):
-        """Save a single task to the database"""
-        tasks = self.load_tasks()
-        
+        """Save a single task to the database (user-specific)"""
+        user_id = task_data.get('user_id')
+        tasks = []
+        try:
+            with open(self.tasks_file, 'r') as f:
+                tasks = json.load(f)
+        except FileNotFoundError:
+            pass
         # Find and update existing task or add new one
         task_id = task_data.get('id')
         task_found = False
-        
         for i, task in enumerate(tasks):
             if task.get('id') == task_id:
                 tasks[i] = task_data
                 task_found = True
                 break
-        
         if not task_found:
             tasks.append(task_data)
-        
-        self._save_tasks(tasks)
+        with open(self.tasks_file, 'w') as f:
+            json.dump(tasks, f, default=self._serialize_datetime, indent=2)
     
-    def delete_task(self, task_id: str):
-        """Delete a task from the database"""
-        tasks = self.load_tasks()
-        tasks = [task for task in tasks if task.get('id') != task_id]
-        self._save_tasks(tasks)
+    def delete_task(self, task_id: str, user_id: str):
+        """Delete a task for a specific user from the database"""
+        try:
+            with open(self.tasks_file, 'r') as f:
+                tasks = json.load(f)
+        except FileNotFoundError:
+            tasks = []
+        tasks = [task for task in tasks if not (task.get('id') == task_id and task.get('user_id') == user_id)]
+        with open(self.tasks_file, 'w') as f:
+            json.dump(tasks, f, default=self._serialize_datetime, indent=2)
     
 
     
@@ -175,9 +183,16 @@ class DataManager:
         
         self._save_posts(posts)
     
-    def save_streak(self, streak_data: Dict[str, Any]):
-        """Save streak data to the database"""
-        self._save_streak(streak_data)
+    def save_streak(self, user_id: str, streak_data: Dict[str, Any]):
+        """Save streak data for a specific user to the database"""
+        try:
+            with open(self.streak_file, 'r') as f:
+                all_streaks = json.load(f)
+        except FileNotFoundError:
+            all_streaks = {}
+        all_streaks[user_id] = streak_data
+        with open(self.streak_file, 'w') as f:
+            json.dump(all_streaks, f, default=self._serialize_datetime, indent=2)
     
     def save_tip(self, tip_data: Dict[str, Any]):
         """Save a single tip to the database"""

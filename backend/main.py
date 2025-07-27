@@ -111,6 +111,7 @@ class Task(BaseModel):
     completed: bool = False
     due_date: Optional[date] = None
     completion_history: Optional[Dict[str, bool]] = None  # Track completion by date
+    user_id: str
 
 
 
@@ -226,8 +227,8 @@ async def health_check():
 
 # Tasks endpoints
 @app.get("/api/tasks", response_model=List[Task])
-async def get_tasks():
-    return list(tasks_db.values())
+async def get_tasks(user_id: str):
+    return data_manager.load_tasks(user_id)
 
 
 
@@ -243,17 +244,13 @@ async def create_task(task: Task):
     task.id = str(uuid.uuid4())
     if task.completion_history is None:
         task.completion_history = {}
-    tasks_db[task.id] = task
-    
-    # Save to persistent storage
-    task_dict = task.model_dump()
-    data_manager.save_task(task_dict)
+    data_manager.save_task(task.model_dump())
     
     return task
 
 @app.put("/api/tasks/{task_id}", response_model=Task)
 async def update_task(task_id: str, task: Task):
-    if task_id not in tasks_db:
+    if not any(t["id"] == task_id for t in data_manager.load_tasks(task.user_id)):
         raise HTTPException(status_code=404, detail="Task not found")
     
     # Validate due date - should not be in the past
@@ -269,22 +266,15 @@ async def update_task(task_id: str, task: Task):
     if task.completion_history is None:
         task.completion_history = tasks_db[task_id].completion_history or {}
     
-    tasks_db[task_id] = task
-    
-    # Save to persistent storage
-    task_dict = task.model_dump()
-    data_manager.save_task(task_dict)
+    data_manager.save_task(task.model_dump())
     
     return task
 
 @app.delete("/api/tasks/{task_id}")
-async def delete_task(task_id: str):
-    if task_id not in tasks_db:
+async def delete_task(task_id: str, user_id: str):
+    if not any(t["id"] == task_id for t in data_manager.load_tasks(user_id)):
         raise HTTPException(status_code=404, detail="Task not found")
-    del tasks_db[task_id]
-    
-    # Save to persistent storage
-    data_manager.delete_task(task_id)
+    data_manager.delete_task(task_id, user_id)
     
     return {"message": "Task deleted"}
 
@@ -292,11 +282,11 @@ async def delete_task(task_id: str):
 
 # New calendar endpoint for date-specific tasks
 @app.get("/api/calendar/{target_date}", response_model=CalendarDayResponse)
-async def get_calendar_day(target_date: date):
+async def get_calendar_day(target_date: date, user_id: str):
     """Get all tasks for a specific date with completion statistics"""
     day_tasks = []
     
-    for task in tasks_db.values():
+    for task in data_manager.load_tasks(user_id):
         # Check if task is due on the target date
         if task.due_date == target_date:
             # Check completion status for this specific date
@@ -316,7 +306,8 @@ async def get_calendar_day(target_date: date):
                 description=task.description,
                 completed=is_completed,
                 due_date=task.due_date,
-                completion_history=task.completion_history
+                completion_history=task.completion_history,
+                user_id=task.user_id
             )
             day_tasks.append(task_copy)
     
@@ -334,33 +325,33 @@ async def get_calendar_day(target_date: date):
 
 # Endpoint to update task completion for a specific date
 @app.put("/api/tasks/{task_id}/complete/{target_date}")
-async def update_task_completion(task_id: str, target_date: date, completed: bool):
+async def update_task_completion(task_id: str, target_date: date, completed: bool, user_id: str):
     """Update the completion status of a task for a specific date"""
-    if task_id not in tasks_db:
+    tasks = data_manager.load_tasks(user_id)
+    task = next((t for t in tasks if t["id"] == task_id), None)
+    if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     
-    task = tasks_db[task_id]
     date_str = target_date.isoformat()
     
     # Initialize completion history if it doesn't exist
-    if task.completion_history is None:
-        task.completion_history = {}
+    if task["completion_history"] is None:
+        task["completion_history"] = {}
     
     # Update completion status for the specific date
-    task.completion_history[date_str] = completed
+    task["completion_history"][date_str] = completed
     
     # Update general completion status based on today's date
     today_str = date.today().isoformat()
-    if today_str in task.completion_history:
-        task.completed = task.completion_history[today_str]
+    if today_str in task["completion_history"]:
+        task["completed"] = task["completion_history"][today_str]
     
     # Update streak if task was completed
     if completed:
-        streak_manager.update_streak_for_completion(target_date)
+        streak_manager.update_streak_for_completion(user_id, target_date)
     
     # Save to persistent storage
-    task_dict = task.model_dump()
-    data_manager.save_task(task_dict)
+    data_manager.save_task(task)
     
     return {
         "message": f"Task completion updated for {target_date}",
@@ -371,14 +362,14 @@ async def update_task_completion(task_id: str, target_date: date, completed: boo
 
 # Streak endpoints
 @app.get("/api/streak", response_model=StreakSummary)
-async def get_streak():
+async def get_streak(user_id: str):
     """Get current streak information"""
-    return streak_manager.get_streak_summary()
+    return streak_manager.get_streak_summary(user_id)
 
 @app.post("/api/streak/complete")
-async def complete_task_for_streak(completion_date: date):
+async def complete_task_for_streak(completion_date: date, user_id: str):
     """Manually complete a task for streak tracking (for testing purposes)"""
-    updated_streak = streak_manager.update_streak_for_completion(completion_date)
+    updated_streak = streak_manager.update_streak_for_completion(user_id, completion_date)
     return {
         "message": f"Streak updated for completion on {completion_date}",
         "streak_data": updated_streak
@@ -420,8 +411,11 @@ async def create_tip(tip: Tip):
 
 # Forum endpoints
 @app.get("/api/posts", response_model=List[ForumPost])
-async def get_posts():
-    return list(posts_db.values())
+async def get_posts(user_id: Optional[str] = None):
+    posts = data_manager.load_posts()
+    if user_id:
+        return [post for post in posts if post.get("user_id") == user_id]
+    return posts
 
 @app.get("/api/posts/{post_id}", response_model=ForumPost)
 async def get_post(post_id: str):

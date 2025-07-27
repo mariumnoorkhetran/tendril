@@ -1,3 +1,5 @@
+import { getUserId } from './utils';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 // Types
@@ -107,36 +109,42 @@ class ApiClient {
 
   // Tasks API
   async getTasks(): Promise<Task[]> {
-    return this.request<Task[]>('/api/tasks');
+    const userId = getUserId();
+    return this.request<Task[]>(`/api/tasks?user_id=${userId}`);
   }
 
   async createTask(task: Omit<Task, 'id'>): Promise<Task> {
+    const userId = getUserId();
     return this.request<Task>('/api/tasks', {
       method: 'POST',
-      body: JSON.stringify(task),
+      body: JSON.stringify({ ...task, user_id: userId }),
     });
   }
 
   async updateTask(id: string, task: Task): Promise<Task> {
+    const userId = getUserId();
     return this.request<Task>(`/api/tasks/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(task),
+      body: JSON.stringify({ ...task, user_id: userId }),
     });
   }
 
   async deleteTask(id: string): Promise<{ message: string }> {
-    return this.request<{ message: string }>(`/api/tasks/${id}`, {
+    const userId = getUserId();
+    return this.request<{ message: string }>(`/api/tasks/${id}?user_id=${userId}`, {
       method: 'DELETE',
     });
   }
 
   // Calendar API
   async getCalendarDay(date: string): Promise<CalendarDayResponse> {
-    return this.request<CalendarDayResponse>(`/api/calendar/${date}`);
+    const userId = getUserId();
+    return this.request<CalendarDayResponse>(`/api/calendar/${date}?user_id=${userId}`);
   }
 
   async updateTaskCompletion(taskId: string, date: string, completed: boolean): Promise<{ message: string; task_id: string; date: string; completed: boolean }> {
-    return this.request(`/api/tasks/${taskId}/complete/${date}?completed=${completed}`, {
+    const userId = getUserId();
+    return this.request(`/api/tasks/${taskId}/complete/${date}?completed=${completed}&user_id=${userId}`, {
       method: 'PUT',
     });
   }
@@ -144,8 +152,10 @@ class ApiClient {
 
 
   // Forum Posts API
-  async getPosts(): Promise<ForumPost[]> {
-    return this.request<ForumPost[]>('/api/posts');
+  async getPosts(myPostsOnly = false): Promise<ForumPost[]> {
+    const userId = getUserId();
+    const url = myPostsOnly ? `/api/posts?user_id=${userId}` : '/api/posts';
+    return this.request<ForumPost[]>(url);
   }
 
   async getPost(postId: string): Promise<ForumPost> {
@@ -189,9 +199,10 @@ class ApiClient {
   }
 
   async createPost(post: Omit<ForumPost, 'id' | 'created_at'>): Promise<ForumPost> {
+    const userId = getUserId();
     return this.request<ForumPost>('/api/posts', {
       method: 'POST',
-      body: JSON.stringify(post),
+      body: JSON.stringify({ ...post, user_id: userId }),
     });
   }
 
@@ -221,11 +232,13 @@ class ApiClient {
 
   // Streak API
   async getStreak(): Promise<StreakSummary> {
-    return this.request<StreakSummary>('/api/streak');
+    const userId = getUserId();
+    return this.request<StreakSummary>(`/api/streak?user_id=${userId}`);
   }
 
   async completeTaskForStreak(completionDate: string): Promise<{ message: string; streak_data: any }> {
-    return this.request(`/api/streak/complete?completion_date=${completionDate}`, {
+    const userId = getUserId();
+    return this.request(`/api/streak/complete?completion_date=${completionDate}&user_id=${userId}`, {
       method: 'POST',
     });
   }
@@ -272,7 +285,7 @@ export const api = {
 
   
   // Posts
-  getPosts: () => apiClient.getPosts(),
+  getPosts: (myPostsOnly = false) => apiClient.getPosts(myPostsOnly),
   getPost: (postId: string) => apiClient.getPost(postId),
   analyzePostContent: (content: string, userId?: string) => apiClient.analyzePostContent(content, userId),
   createPost: (post: Omit<ForumPost, 'id' | 'created_at'>) => apiClient.createPost(post),

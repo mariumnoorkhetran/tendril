@@ -2,18 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { api, ForumPost, Tip } from "../lib/api";
-
-// Utility function to get or create user ID
-const getUserId = (): string => {
-  if (typeof window === 'undefined') return 'default_user';
-  
-  let userId = localStorage.getItem('forum_user_id');
-  if (!userId) {
-    userId = 'user_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('forum_user_id', userId);
-  }
-  return userId;
-};
+import { getUserId } from "../lib/utils";
 
 export default function Forum() {
   const [activeTab, setActiveTab] = useState("create");
@@ -41,10 +30,10 @@ export default function Forum() {
   } | null>(null);
 
   // Load posts from backend
-  const loadPosts = async () => {
+  const loadPosts = async (myPostsOnly = false) => {
     try {
       setLoading(true);
-      const fetchedPosts = await api.getPosts();
+      const fetchedPosts = await api.getPosts(myPostsOnly);
       setPosts(fetchedPosts);
     } catch (error) {
       console.error('Failed to load posts:', error);
@@ -254,10 +243,6 @@ export default function Forum() {
     loadPosts();
   }, []);
 
-  // Filter posts by current user ID
-  const currentUserId = getUserId();
-  const myPosts = posts.filter(post => post.user_id === currentUserId);
-
   return (
     <div className="m-8 max-w-5xl mx-auto">
       {/* Header Section */}
@@ -270,7 +255,7 @@ export default function Forum() {
             </p>
           </div>
           <button
-            onClick={loadPosts}
+            onClick={() => loadPosts}
             disabled={loading}
             className={`px-4 py-2 rounded-lg transition-colors ${
               loading 
@@ -308,7 +293,7 @@ export default function Forum() {
             Create a Post
           </button>
           <button
-            onClick={() => setActiveTab("my-posts")}
+            onClick={() => { setActiveTab("my-posts"); loadPosts(true); }}
             className={`px-6 py-3 font-medium text-sm transition-colors ${
               activeTab === "my-posts"
                 ? "text-[#af5f5f] border-b-2 border-[#af5f5f]"
@@ -318,7 +303,7 @@ export default function Forum() {
             My Posts
           </button>
           <button
-            onClick={() => setActiveTab("all-posts")}
+            onClick={() => { setActiveTab("all-posts"); loadPosts(false); }}
             className={`px-6 py-3 font-medium text-sm transition-colors ${
               activeTab === "all-posts"
                 ? "text-[#af5f5f] border-b-2 border-[#af5f5f]"
@@ -505,7 +490,7 @@ export default function Forum() {
               </div>
               {loading ? (
                 <p className="text-gray">Loading posts...</p>
-              ) : myPosts.length === 0 ? (
+              ) : posts.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">You haven't created any posts yet.</p>
                   <button 
@@ -517,7 +502,7 @@ export default function Forum() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {myPosts.map((post) => (
+                  {posts.map((post) => (
                     <div key={post.id} className="border border-gray-400 rounded-lg p-4 transition-colors">
                       <h4 className="font-semibold text-gray mb-2">{post.title}</h4>
                       <p className="text-gray-600 text-sm mb-3">

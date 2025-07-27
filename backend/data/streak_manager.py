@@ -5,16 +5,16 @@ class StreakManager:
     def __init__(self, data_manager):
         self.data_manager = data_manager
     
-    def get_streak_data(self) -> Dict[str, Any]:
-        """Get current streak data"""
-        return self.data_manager.load_streak()
+    def get_streak_data(self, user_id: str) -> Dict[str, Any]:
+        """Get current streak data for a specific user"""
+        return self.data_manager.load_streak(user_id)
     
-    def update_streak_for_completion(self, completion_date: date) -> Dict[str, Any]:
+    def update_streak_for_completion(self, user_id: str, completion_date: date) -> Dict[str, Any]:
         """
-        Update streak when a task is completed on a given date
+        Update streak when a task is completed on a given date for a specific user
         Returns updated streak data
         """
-        streak_data = self.get_streak_data()
+        streak_data = self.get_streak_data(user_id)
         
         # Convert completion_date to string for comparison
         completion_date_str = completion_date.isoformat()
@@ -110,11 +110,11 @@ class StreakManager:
         
         return consecutive_count
     
-    def get_streak_summary(self) -> Dict[str, Any]:
+    def get_streak_summary(self, user_id: str) -> Dict[str, Any]:
         """
-        Get a summary of streak information
+        Get a summary of streak information for a specific user
         """
-        streak_data = self.get_streak_data()
+        streak_data = self.get_streak_data(user_id)
         
         # Calculate days since last completion
         last_completion_date = streak_data.get('last_completion_date')
