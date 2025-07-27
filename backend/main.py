@@ -33,13 +33,15 @@ if frontend_url and frontend_url != "http://localhost:3000":
         f"{frontend_url}/",  # Add with trailing slash
     ])
 
+print(f"Allowed origins: {allowed_origins}")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
-    allow_headers=["*"],
-    expose_headers=["*"],
+    allow_headers=["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
+    max_age=600,
 )
 
 # Simple Rate Limiter for Compassionate Rewriter
@@ -216,6 +218,17 @@ async def root():
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now()}
 
+# Global OPTIONS handler for CORS preflight
+@app.options("/{full_path:path}")
+async def options_handler(full_path: str, request):
+    from fastapi.responses import Response
+    response = Response()
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept, Origin, X-Requested-With"
+    response.headers["Access-Control-Max-Age"] = "600"
+    return response
+
 # Tasks endpoints
 @app.get("/api/tasks", response_model=List[Task])
 async def get_tasks():
@@ -223,7 +236,13 @@ async def get_tasks():
 
 @app.options("/api/tasks")
 async def options_tasks():
-    return {"message": "OK"}
+    from fastapi.responses import Response
+    response = Response()
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept, Origin, X-Requested-With"
+    response.headers["Access-Control-Max-Age"] = "600"
+    return response
 
 @app.post("/api/tasks", response_model=Task)
 async def create_task(task: Task):
