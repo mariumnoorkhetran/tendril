@@ -61,7 +61,7 @@ For people struggling with mental health issues or chronic pain, maintaining hyg
 
 ## Team
 
-- [[Abdullah Khetran]([url](https://github.com/abdullahkhetran))] — Frontend, UI/UX
+- [[Abdullah Khetran](https://github.com/abdullahkhetran) — Frontend, UI/UX
 - [Name] — Backend, Logic
 - [Name] — Deployment
 - [Name] — Presentation
