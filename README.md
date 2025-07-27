@@ -1,4 +1,4 @@
-# Tendril — Compassionate Care
+# 🌱 Tendril — Compassionate Care
 
 **A compassionate hygiene tracker and anonymous support space that gently helps you care for yourself, one soft task at a time.**
 
@@ -10,7 +10,7 @@ For people struggling with mental health issues or chronic pain, maintaining hyg
 
 ---
 
-## How Tendril Helps
+## How 🌱 Tendril Helps
 
 - Logs tasks at your pace and comfort
 - Tracks a **“tender streak”** — a streak that *pauses* instead of breaking
@@ -36,7 +36,7 @@ For people struggling with mental health issues or chronic pain, maintaining hyg
 
 - [Abdullah Khetran](https://github.com/abdullahkhetran) — Frontend, UI/UX
 - [Yaqoot Gohar Khan](https://github.com/YaqootGKhan) — Backend, Logic
-- [Marium Noor Khetran](https://github.com/mariumnoorkhetran) — Deployment
+- [Marium Noor Khetran](https://github.com/mariumnoorkhetran) — Project Management, Deployment
 - [Hafiz Muhammad Bilal](https://github.com/Hafiz331) — Presentation
 
 ---
