@@ -7,11 +7,11 @@ import TipsCard from './TipsCard';
 export default function Home() {
   const [streakRefreshKey, setStreakRefreshKey] = useState(0);
 
-  // Refresh streak every 30 seconds to keep it updated
+  // Refresh streak every 10 minutes to keep it updated
   useEffect(() => {
     const interval = setInterval(() => {
       setStreakRefreshKey(prev => prev + 1);
-    }, 30000);
+    }, 600000);
 
     return () => clearInterval(interval);
   }, []);
