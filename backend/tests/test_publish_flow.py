@@ -6,7 +6,7 @@ import requests
 import time
 import json
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8080"
 
 def test_publish_flow():
     """Test the new publish flow where analysis only happens on publish"""

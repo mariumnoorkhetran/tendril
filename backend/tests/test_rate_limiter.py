@@ -6,7 +6,7 @@ import requests
 import time
 import json
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8080"
 
 def test_rate_limiter():
     """Test the rate limiter by making multiple requests"""

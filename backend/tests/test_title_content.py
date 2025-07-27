@@ -5,7 +5,7 @@ Test script to verify title and content analysis
 import requests
 import json
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8080"
 
 def test_title_content_analysis():
     """Test analyzing both title and content together"""

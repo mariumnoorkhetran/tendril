@@ -25,6 +25,8 @@ frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 allowed_origins = [
     "http://localhost:3000",  # Next.js dev server (local development)
     "https://localhost:3000",  # HTTPS local development
+    "http://localhost:8080",  # Backend server (for direct access)
+    "https://localhost:8080",  # HTTPS backend server
 ]
 
 # Add production frontend URL if provided

@@ -3,7 +3,7 @@ import json
 import time
 from datetime import date, timedelta
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8080"
 
 def test_health_check():
     """Test the health check endpoint"""
