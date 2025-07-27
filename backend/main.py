@@ -37,8 +37,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Simple Rate Limiter for Compassionate Rewriter
@@ -219,6 +220,10 @@ async def health_check():
 @app.get("/api/tasks", response_model=List[Task])
 async def get_tasks():
     return list(tasks_db.values())
+
+@app.options("/api/tasks")
+async def options_tasks():
+    return {"message": "OK"}
 
 @app.post("/api/tasks", response_model=Task)
 async def create_task(task: Task):
