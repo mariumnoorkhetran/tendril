@@ -131,6 +131,10 @@ class PostAnalysisRequest(BaseModel):
     content: str
     user_id: Optional[str] = None
 
+class CommentAnalysisRequest(BaseModel):
+    content: str
+    user_id: Optional[str] = None
+
 # Calendar response model for date-specific tasks
 class CalendarDayResponse(BaseModel):
     date: date
@@ -417,6 +421,38 @@ async def get_post(post_id: str):
 @app.post("/api/posts/analyze")
 async def analyze_post_content(request: PostAnalysisRequest):
     """Analyze post content for negative words and suggest compassionate rewriting"""
+    # Use default user ID if not provided
+    user_id = request.user_id or "anonymous"
+    
+    # Check rate limit
+    if not rate_limiter.is_allowed(user_id):
+        remaining_time = rate_limiter.window_seconds
+        raise HTTPException(
+            status_code=429, 
+            detail={
+                "error": "Rate limit exceeded",
+                "message": f"Too many analysis requests. Please wait {remaining_time} seconds before trying again.",
+                "remaining_requests": 0,
+                "window_seconds": rate_limiter.window_seconds
+            }
+        )
+    
+    # Perform analysis
+    analysis = compassionate_rewriter.analyze_and_suggest_rewrite(request.content)
+    
+    # Add rate limit info to response
+    remaining_requests = rate_limiter.get_remaining_requests(user_id)
+    analysis["rate_limit"] = {
+        "remaining_requests": remaining_requests,
+        "max_requests": rate_limiter.max_requests,
+        "window_seconds": rate_limiter.window_seconds
+    }
+    
+    return analysis
+
+@app.post("/api/comments/analyze")
+async def analyze_comment_content(request: CommentAnalysisRequest):
+    """Analyze comment content for negative words and suggest compassionate rewriting"""
     # Use default user ID if not provided
     user_id = request.user_id or "anonymous"
     

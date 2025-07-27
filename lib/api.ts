@@ -186,6 +186,24 @@ class ApiClient {
     });
   }
 
+  async analyzeCommentContent(content: string, userId?: string): Promise<{
+    contains_negative_words: boolean;
+    found_words: string[];
+    suggestion_available: boolean;
+    rewritten_text: string | null;
+    error: string | null;
+    rate_limit?: {
+      remaining_requests: number;
+      max_requests: number;
+      window_seconds: number;
+    };
+  }> {
+    return this.request('/api/comments/analyze', {
+      method: 'POST',
+      body: JSON.stringify({ content, user_id: userId }),
+    });
+  }
+
   async createPost(post: Omit<ForumPost, 'id' | 'created_at'>): Promise<ForumPost> {
     return this.request<ForumPost>('/api/posts', {
       method: 'POST',
@@ -277,6 +295,9 @@ export const api = {
   analyzePostContent: (content: string, userId?: string) => apiClient.analyzePostContent(content, userId),
   createPost: (post: Omit<ForumPost, 'id' | 'created_at'>) => apiClient.createPost(post),
   reactToPost: (postId: string) => apiClient.reactToPost(postId),
+  
+  // Comments
+  analyzeCommentContent: (content: string, userId?: string) => apiClient.analyzeCommentContent(content, userId),
   
   // Comments
   getComments: (postId: string) => apiClient.getComments(postId),

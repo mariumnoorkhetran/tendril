@@ -32,6 +32,17 @@ function CommentItem({ comment, postId, onCommentAdded, level = 0 }: CommentItem
   const [showReplies, setShowReplies] = useState(level < 2); // Auto-expand first 2 levels
   const [replies, setReplies] = useState<Comment[]>([]);
   const [loadingReplies, setLoadingReplies] = useState(false);
+  
+  // Compassionate rewriting state for replies
+  const [showRewritingSuggestion, setShowRewritingSuggestion] = useState(false);
+  const [rewrittenContent, setRewrittenContent] = useState("");
+  const [analyzingContent, setAnalyzingContent] = useState(false);
+  const [useRewrittenContent, setUseRewrittenContent] = useState(false);
+  const [rateLimitInfo, setRateLimitInfo] = useState<{
+    remaining_requests: number;
+    max_requests: number;
+    window_seconds: number;
+  } | null>(null);
 
   const currentUserId = getUserId();
 
@@ -71,21 +82,69 @@ function CommentItem({ comment, postId, onCommentAdded, level = 0 }: CommentItem
 
     try {
       setSubmitting(true);
+      
+      // Analyze content for negative words when user clicks post reply
+      const contentToPost = useRewrittenContent ? rewrittenContent : replyContent;
+      const userId = getUserId();
+      
+      // Show analyzing state
+      setAnalyzingContent(true);
+      
+      const analysis = await api.analyzeCommentContent(contentToPost, userId);
+      
+      // Update rate limit info
+      if (analysis.rate_limit) {
+        setRateLimitInfo(analysis.rate_limit);
+      }
+      
+      // Check if content contains negative words
+      if (analysis.contains_negative_words) {
+        if (analysis.suggestion_available) {
+          // Show compassionate suggestion
+          setRewrittenContent(analysis.rewritten_text || "");
+          setShowRewritingSuggestion(true);
+          setAnalyzingContent(false);
+          setSubmitting(false);
+          return; // Don't publish, let user choose
+        } else {
+          // No suggestion available, block the reply
+          alert('Your reply contains negative self-talk. Please edit your message to remove negative words before posting.\n\nThis helps create a supportive community environment.');
+          setAnalyzingContent(false);
+          setSubmitting(false);
+          return;
+        }
+      }
+      
+      // Content is approved, proceed with publishing
+      const finalContent = useRewrittenContent ? rewrittenContent : contentToPost;
+      
       await api.createComment(postId, {
         post_id: postId,
         user_id: currentUserId,
-        content: replyContent,
+        content: finalContent,
         parent_id: comment.id,
       });
       
       setReplyContent("");
       setShowReplyForm(false);
+      setShowRewritingSuggestion(false);
+      setRewrittenContent("");
+      setUseRewrittenContent(false);
+      setRateLimitInfo(null);
       onCommentAdded(); // Refresh comments
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create reply:', error);
-      alert('Failed to create reply. Please try again.');
+      
+      // Handle rate limit errors
+      if (error.status === 429) {
+        const errorDetail = error.detail || {};
+        alert(`Rate limit exceeded: ${errorDetail.message || 'Too many analysis requests. Please wait before trying again.'}`);
+      } else {
+        alert('Failed to create reply. Please try again.');
+      }
     } finally {
       setSubmitting(false);
+      setAnalyzingContent(false);
     }
   };
 
@@ -171,29 +230,132 @@ function CommentItem({ comment, postId, onCommentAdded, level = 0 }: CommentItem
           <form onSubmit={handleSubmitReply} className="mt-3">
             <textarea
               value={replyContent}
-              onChange={(e) => setReplyContent(e.target.value)}
+              onChange={(e) => {
+                setReplyContent(e.target.value);
+                // Clear any previous suggestions when user edits
+                if (showRewritingSuggestion) {
+                  setShowRewritingSuggestion(false);
+                  setUseRewrittenContent(false);
+                  setRewrittenContent("");
+                }
+                // Clear rate limit info when user edits
+                setRateLimitInfo(null);
+              }}
               placeholder="Write your reply..."
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#af5f5f] focus:border-[#af5f5f] resize-none"
               required
             />
+            
+            {/* Analysis status - only show when analyzing during publish */}
+            {analyzingContent && (
+              <div className="mt-2 text-sm text-gray-600 flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#af5f5f] mr-2"></div>
+                Analyzing content for community guidelines...
+              </div>
+            )}
+            
+            {/* Rate Limit Indicator - only show after analysis */}
+            {rateLimitInfo && !analyzingContent && (
+              <div className="mt-2 text-xs text-gray-500 flex items-center gap-2">
+                <span>📊</span>
+                <span>
+                  Analysis requests: {rateLimitInfo.remaining_requests}/{rateLimitInfo.max_requests} remaining
+                  {rateLimitInfo.remaining_requests <= 2 && (
+                    <span className="text-orange-600 font-medium"> (limit approaching)</span>
+                  )}
+                </span>
+              </div>
+            )}
+
+            {/* Compassionate Rewriting Suggestion */}
+            {showRewritingSuggestion && (
+              <div className="bg-[#fef7f0] border border-[#af5f5f] rounded-lg p-3 mt-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[#af5f5f] text-sm">💝</span>
+                  <h4 className="font-semibold text-gray text-sm">Compassionate Suggestion</h4>
+                </div>
+                <p className="text-xs text-gray-600">
+                  We noticed some self-critical language in your reply. To create a supportive community, please either:
+                </p>
+                <div className="bg-white rounded-lg p-2 border">
+                  <p className="text-gray-700 text-xs whitespace-pre-wrap">{rewrittenContent}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUseRewrittenContent(true);
+                      setReplyContent(rewrittenContent);
+                    }}
+                    className={`px-3 py-1 rounded-lg transition-colors text-xs cursor-pointer ${
+                      useRewrittenContent 
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-[#af5f5f] text-white hover:bg-[#af5f5f]/90'
+                    }`}
+                  >
+                    {useRewrittenContent ? '✓ Using This Version' : 'Use This Version'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowRewritingSuggestion(false);
+                      setUseRewrittenContent(false);
+                    }}
+                    className="px-3 py-1 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors text-xs cursor-pointer"
+                  >
+                    Edit Original
+                  </button>
+                </div>
+                <div className="text-xs text-gray-500 bg-yellow-50 p-2 rounded">
+                  💡 <strong>Note:</strong> You must either use the compassionate version above or edit your message to remove negative words before posting.
+                </div>
+              </div>
+            )}
+
+            {/* Warning if negative words are still present and user hasn't chosen compassionate version */}
+            {showRewritingSuggestion && !useRewrittenContent && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-2 mt-2">
+                <div className="flex items-center gap-2 text-red-700">
+                  <span>⚠️</span>
+                  <span className="text-xs font-medium">Your message still contains negative self-talk</span>
+                </div>
+                <p className="text-xs text-red-600 mt-1">
+                  Please either use the compassionate version above or edit your message to remove negative words.
+                </p>
+              </div>
+            )}
+
             <div className="flex gap-2 mt-2">
               <button
                 type="submit"
-                disabled={submitting}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  submitting 
+                disabled={submitting || analyzingContent || (showRewritingSuggestion && !useRewrittenContent)}
+                className={`px-4 py-2 rounded-lg transition-colors text-sm cursor-pointer ${
+                  submitting || analyzingContent
                     ? 'bg-gray-400 cursor-not-allowed' 
+                    : showRewritingSuggestion && !useRewrittenContent
+                    ? 'bg-red-500 cursor-not-allowed'
                     : 'bg-[#af5f5f] hover:bg-[#af5f5f]/90'
-                } text-white text-sm cursor-pointer`}
+                } text-white`}
               >
-                {submitting ? 'Posting...' : 'Post Reply'}
+                {analyzingContent 
+                  ? 'Analyzing Content...' 
+                  : submitting 
+                  ? 'Posting...' 
+                  : showRewritingSuggestion && !useRewrittenContent
+                  ? 'Please Choose Version First'
+                  : 'Post Reply'
+                }
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setShowReplyForm(false);
                   setReplyContent("");
+                  setShowRewritingSuggestion(false);
+                  setUseRewrittenContent(false);
+                  setRewrittenContent("");
+                  setRateLimitInfo(null);
                 }}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm cursor-pointer"
               >
@@ -233,6 +395,17 @@ export default function Comments({ postId }: CommentsProps) {
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  
+  // Compassionate rewriting state for main comments
+  const [showRewritingSuggestion, setShowRewritingSuggestion] = useState(false);
+  const [rewrittenContent, setRewrittenContent] = useState("");
+  const [analyzingContent, setAnalyzingContent] = useState(false);
+  const [useRewrittenContent, setUseRewrittenContent] = useState(false);
+  const [rateLimitInfo, setRateLimitInfo] = useState<{
+    remaining_requests: number;
+    max_requests: number;
+    window_seconds: number;
+  } | null>(null);
 
   const currentUserId = getUserId();
 
@@ -262,19 +435,67 @@ export default function Comments({ postId }: CommentsProps) {
 
     try {
       setSubmitting(true);
+      
+      // Analyze content for negative words when user clicks post comment
+      const contentToPost = useRewrittenContent ? rewrittenContent : newComment;
+      const userId = getUserId();
+      
+      // Show analyzing state
+      setAnalyzingContent(true);
+      
+      const analysis = await api.analyzeCommentContent(contentToPost, userId);
+      
+      // Update rate limit info
+      if (analysis.rate_limit) {
+        setRateLimitInfo(analysis.rate_limit);
+      }
+      
+      // Check if content contains negative words
+      if (analysis.contains_negative_words) {
+        if (analysis.suggestion_available) {
+          // Show compassionate suggestion
+          setRewrittenContent(analysis.rewritten_text || "");
+          setShowRewritingSuggestion(true);
+          setAnalyzingContent(false);
+          setSubmitting(false);
+          return; // Don't publish, let user choose
+        } else {
+          // No suggestion available, block the comment
+          alert('Your comment contains negative self-talk. Please edit your message to remove negative words before posting.\n\nThis helps create a supportive community environment.');
+          setAnalyzingContent(false);
+          setSubmitting(false);
+          return;
+        }
+      }
+      
+      // Content is approved, proceed with publishing
+      const finalContent = useRewrittenContent ? rewrittenContent : contentToPost;
+      
       await api.createComment(postId, {
         post_id: postId,
         user_id: currentUserId,
-        content: newComment,
+        content: finalContent,
       });
       
       setNewComment("");
+      setShowRewritingSuggestion(false);
+      setRewrittenContent("");
+      setUseRewrittenContent(false);
+      setRateLimitInfo(null);
       loadComments(); // Refresh comments
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create comment:', error);
-      alert('Failed to create comment. Please try again.');
+      
+      // Handle rate limit errors
+      if (error.status === 429) {
+        const errorDetail = error.detail || {};
+        alert(`Rate limit exceeded: ${errorDetail.message || 'Too many analysis requests. Please wait before trying again.'}`);
+      } else {
+        alert('Failed to create comment. Please try again.');
+      }
     } finally {
       setSubmitting(false);
+      setAnalyzingContent(false);
     }
   };
 
@@ -291,22 +512,121 @@ export default function Comments({ postId }: CommentsProps) {
         <form onSubmit={handleSubmitComment}>
           <textarea
             value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
+            onChange={(e) => {
+              setNewComment(e.target.value);
+              // Clear any previous suggestions when user edits
+              if (showRewritingSuggestion) {
+                setShowRewritingSuggestion(false);
+                setUseRewrittenContent(false);
+                setRewrittenContent("");
+              }
+              // Clear rate limit info when user edits
+              setRateLimitInfo(null);
+            }}
             placeholder="Share your thoughts..."
             rows={4}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#af5f5f] focus:border-[#af5f5f] resize-none"
             required
           />
+          
+          {/* Analysis status - only show when analyzing during publish */}
+          {analyzingContent && (
+            <div className="mt-2 text-sm text-gray-600 flex items-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#af5f5f] mr-2"></div>
+              Analyzing content for community guidelines...
+            </div>
+          )}
+          
+          {/* Rate Limit Indicator - only show after analysis */}
+          {rateLimitInfo && !analyzingContent && (
+            <div className="mt-2 text-xs text-gray-500 flex items-center gap-2">
+              <span>📊</span>
+              <span>
+                Analysis requests: {rateLimitInfo.remaining_requests}/{rateLimitInfo.max_requests} remaining
+                {rateLimitInfo.remaining_requests <= 2 && (
+                  <span className="text-orange-600 font-medium"> (limit approaching)</span>
+                )}
+              </span>
+            </div>
+          )}
+
+          {/* Compassionate Rewriting Suggestion */}
+          {showRewritingSuggestion && (
+            <div className="bg-[#fef7f0] border border-[#af5f5f] rounded-lg p-4 mt-3 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[#af5f5f] text-lg">💝</span>
+                <h4 className="font-semibold text-gray">Compassionate Suggestion</h4>
+              </div>
+              <p className="text-sm text-gray-600">
+                We noticed some self-critical language in your comment. To create a supportive community, please either:
+              </p>
+              <div className="bg-white rounded-lg p-3 border">
+                <p className="text-gray-700 text-sm whitespace-pre-wrap">{rewrittenContent}</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUseRewrittenContent(true);
+                    setNewComment(rewrittenContent);
+                  }}
+                  className={`px-4 py-2 rounded-lg transition-colors text-sm cursor-pointer ${
+                    useRewrittenContent 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-[#af5f5f] text-white hover:bg-[#af5f5f]/90'
+                  }`}
+                >
+                  {useRewrittenContent ? '✓ Using This Version' : 'Use This Version'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowRewritingSuggestion(false);
+                    setUseRewrittenContent(false);
+                  }}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors text-sm cursor-pointer"
+                >
+                  Edit Original
+                </button>
+              </div>
+              <div className="text-xs text-gray-500 bg-yellow-50 p-2 rounded">
+                💡 <strong>Note:</strong> You must either use the compassionate version above or edit your message to remove negative words before posting.
+              </div>
+            </div>
+          )}
+
+          {/* Warning if negative words are still present and user hasn't chosen compassionate version */}
+          {showRewritingSuggestion && !useRewrittenContent && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
+              <div className="flex items-center gap-2 text-red-700">
+                <span>⚠️</span>
+                <span className="text-sm font-medium">Your message still contains negative self-talk</span>
+              </div>
+              <p className="text-xs text-red-600 mt-1">
+                Please either use the compassionate version above or edit your message to remove negative words.
+              </p>
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={submitting}
-            className={`mt-3 px-6 py-2 rounded-lg transition-colors ${
-              submitting 
+            disabled={submitting || analyzingContent || (showRewritingSuggestion && !useRewrittenContent)}
+            className={`mt-3 px-6 py-2 rounded-lg transition-colors cursor-pointer ${
+              submitting || analyzingContent
                 ? 'bg-gray-400 cursor-not-allowed' 
+                : showRewritingSuggestion && !useRewrittenContent
+                ? 'bg-red-500 cursor-not-allowed'
                 : 'bg-[#af5f5f] hover:bg-[#af5f5f]/90'
-            } text-white cursor-pointer`}
+            } text-white`}
           >
-            {submitting ? 'Posting...' : 'Post Comment'}
+            {analyzingContent 
+              ? 'Analyzing Content...' 
+              : submitting 
+              ? 'Posting...' 
+              : showRewritingSuggestion && !useRewrittenContent
+              ? 'Please Choose Version First'
+              : 'Post Comment'
+            }
           </button>
         </form>
       </div>
