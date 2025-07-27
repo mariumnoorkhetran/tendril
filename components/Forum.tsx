@@ -32,6 +32,8 @@ export default function Forum() {
   const [rewrittenContent, setRewrittenContent] = useState("");
   const [analyzingContent, setAnalyzingContent] = useState(false);
   const [useRewrittenContent, setUseRewrittenContent] = useState(false);
+  const [suggestedTitle, setSuggestedTitle] = useState("");
+  const [suggestedContent, setSuggestedContent] = useState("");
   const [rateLimitInfo, setRateLimitInfo] = useState<{
     remaining_requests: number;
     max_requests: number;
@@ -51,58 +53,24 @@ export default function Forum() {
     }
   };
 
-  // Analyze content for negative words
-  const analyzeContent = async (content: string) => {
-    if (!content.trim()) return;
-    
-    try {
-      setAnalyzingContent(true);
-      const userId = getUserId();
-      const analysis = await api.analyzePostContent(content, userId);
-      
-      if (analysis.contains_negative_words && analysis.suggestion_available) {
-        setRewrittenContent(analysis.rewritten_text || "");
-        setShowRewritingSuggestion(true);
-      }
-      
-      // Update rate limit info
-      if (analysis.rate_limit) {
-        setRateLimitInfo(analysis.rate_limit);
-      }
-    } catch (error: any) {
-      console.error('Failed to analyze content:', error);
-      
-      // Handle rate limit errors
-      if (error.status === 429) {
-        const errorDetail = error.detail || {};
-        alert(`Rate limit exceeded: ${errorDetail.message || 'Too many analysis requests. Please wait before trying again.'}`);
-      }
-    } finally {
-      setAnalyzingContent(false);
-    }
-  };
 
-  // Handle content change with analysis
+
+  // Handle content change
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const content = e.target.value;
     setNewPostContent(content);
     
-    // If user is editing after seeing a suggestion, re-analyze immediately
+    // Clear any previous suggestions when user edits
     if (showRewritingSuggestion) {
-      // Clear the suggestion if user starts editing
       setShowRewritingSuggestion(false);
       setUseRewrittenContent(false);
       setRewrittenContent("");
+      setSuggestedTitle("");
+      setSuggestedContent("");
     }
     
-    // Analyze content when user stops typing (debounced)
-    const timeoutId = setTimeout(() => {
-      if (content.trim()) {
-        analyzeContent(content);
-      }
-    }, 1000);
-    
-    return () => clearTimeout(timeoutId);
+    // Clear rate limit info when user edits
+    setRateLimitInfo(null);
   };
 
   // Create new post
@@ -114,22 +82,68 @@ export default function Forum() {
       return;
     }
 
-    // Check if the content to be posted contains negative words
-    const contentToPost = useRewrittenContent ? rewrittenContent : newPostContent;
-    const userId = getUserId();
-    const analysis = await api.analyzePostContent(contentToPost, userId);
-    
-    if (analysis.contains_negative_words) {
-      alert('Your post contains negative self-talk. Please either:\n\n1. Use the compassionate version above, OR\n2. Edit your message to remove negative words\n\nThis helps create a supportive community environment.');
-      return;
-    }
-
     try {
       setSubmitting(true);
       
+      // Analyze content for negative words when user clicks publish
+      const contentToPost = useRewrittenContent ? rewrittenContent : newPostContent;
+      const userId = getUserId();
+      
+      // Show analyzing state
+      setAnalyzingContent(true);
+      
+      // Combine title and content for analysis
+      const fullTextToAnalyze = `${newPostTitle}\n\n${contentToPost}`;
+      const analysis = await api.analyzePostContent(fullTextToAnalyze, userId);
+      
+      // Update rate limit info
+      if (analysis.rate_limit) {
+        setRateLimitInfo(analysis.rate_limit);
+      }
+      
+      // Check if content contains negative words
+      if (analysis.contains_negative_words) {
+        if (analysis.suggestion_available) {
+          // Parse the rewritten content to separate title and content
+          const rewrittenText = analysis.rewritten_text || "";
+          const lines = rewrittenText.split('\n').filter(line => line.trim());
+          
+          let suggestedTitle = newPostTitle;
+          let suggestedContent = contentToPost;
+          
+          if (lines.length >= 2) {
+            // First line is likely the title, rest is content
+            suggestedTitle = lines[0].trim();
+            suggestedContent = lines.slice(1).join('\n').trim();
+          } else if (lines.length === 1) {
+            // Only one line, treat as content
+            suggestedContent = lines[0].trim();
+          }
+          
+          // Show compassionate suggestion
+          setSuggestedTitle(suggestedTitle);
+          setSuggestedContent(suggestedContent);
+          setRewrittenContent(`Title: ${suggestedTitle}\n\nContent: ${suggestedContent}`);
+          setShowRewritingSuggestion(true);
+          setAnalyzingContent(false);
+          setSubmitting(false);
+          return; // Don't publish, let user choose
+        } else {
+          // No suggestion available, block the post
+          alert('Your post contains negative self-talk. Please edit your message to remove negative words before posting.\n\nThis helps create a supportive community environment.');
+          setAnalyzingContent(false);
+          setSubmitting(false);
+          return;
+        }
+      }
+      
+      // Content is approved, proceed with publishing
+      const finalTitle = useRewrittenContent ? suggestedTitle : newPostTitle;
+      const finalContent = useRewrittenContent ? suggestedContent : contentToPost;
+      
       const postData = {
-        title: newPostTitle,
-        content: contentToPost,
+        title: finalTitle,
+        content: finalContent,
         user_id: getUserId(),
       };
       console.log('Sending post data:', postData);
@@ -141,12 +155,23 @@ export default function Forum() {
       setShowRewritingSuggestion(false);
       setRewrittenContent("");
       setUseRewrittenContent(false);
+      setSuggestedTitle("");
+      setSuggestedContent("");
+      setRateLimitInfo(null);
       setActiveTab("all-posts"); // Switch to all posts tab to show the new post
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create post:', error);
-      alert('Failed to create post. Please try again.');
+      
+      // Handle rate limit errors
+      if (error.status === 429) {
+        const errorDetail = error.detail || {};
+        alert(`Rate limit exceeded: ${errorDetail.message || 'Too many analysis requests. Please wait before trying again.'}`);
+      } else {
+        alert('Failed to create post. Please try again.');
+      }
     } finally {
       setSubmitting(false);
+      setAnalyzingContent(false);
     }
   };
 
@@ -329,15 +354,16 @@ export default function Forum() {
                     className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
                     required
                   />
+                  {/* Analysis status - only show when analyzing during publish */}
                   {analyzingContent && (
                     <div className="mt-2 text-sm text-gray-600 flex items-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#af5f5f] mr-2"></div>
-                      Analyzing your content...
+                      Analyzing content for community guidelines...
                     </div>
                   )}
                   
-                  {/* Rate Limit Indicator */}
-                  {rateLimitInfo && (
+                  {/* Rate Limit Indicator - only show after analysis */}
+                  {rateLimitInfo && !analyzingContent && (
                     <div className="mt-2 text-xs text-gray-500 flex items-center gap-2">
                       <span>📊</span>
                       <span>
@@ -366,8 +392,12 @@ export default function Forum() {
                     <div className="flex gap-3">
                       <button
                         type="button"
-                        onClick={() => setUseRewrittenContent(true)}
-                        className={`px-4 py-2 rounded-lg transition-colors text-sm ${
+                        onClick={() => {
+                          setUseRewrittenContent(true);
+                          setNewPostTitle(suggestedTitle);
+                          setNewPostContent(suggestedContent);
+                        }}
+                        className={`px-4 py-2 rounded-lg transition-colors text-sm cursor-pointer ${
                           useRewrittenContent 
                             ? 'bg-green-600 text-white' 
                             : 'bg-[#af5f5f] text-white hover:bg-[#af5f5f]/90'
@@ -381,7 +411,7 @@ export default function Forum() {
                           setShowRewritingSuggestion(false);
                           setUseRewrittenContent(false);
                         }}
-                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors text-sm"
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors text-sm cursor-pointer"
                       >
                         Edit Original
                       </button>
@@ -407,16 +437,18 @@ export default function Forum() {
 
                 <button 
                   type="submit"
-                  disabled={submitting || (showRewritingSuggestion && !useRewrittenContent)}
+                  disabled={submitting || analyzingContent || (showRewritingSuggestion && !useRewrittenContent)}
                   className={`px-6 py-2 rounded-lg transition-colors ${
-                    submitting 
+                    submitting || analyzingContent
                       ? 'bg-gray-400 cursor-not-allowed' 
                       : showRewritingSuggestion && !useRewrittenContent
                       ? 'bg-red-500 cursor-not-allowed'
                       : 'bg-[#af5f5f] hover:bg-[#af5f5f]/90'
                   } text-white cursor-pointer`}
                 >
-                  {submitting 
+                  {analyzingContent 
+                    ? 'Analyzing Content...' 
+                    : submitting 
                     ? 'Publishing...' 
                     : showRewritingSuggestion && !useRewrittenContent
                     ? 'Please Choose Version First'

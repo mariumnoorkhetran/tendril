@@ -84,5 +84,65 @@
     "comments_count": 0,
     "reactions_count": 0,
     "user_reacted": false
+  },
+  {
+    "id": "ae18d26c-4ef3-48f9-b656-a5b6aaee008f",
+    "title": "Hey its me",
+    "content": "That was odd",
+    "user_id": "user_249ks2lp2",
+    "author": null,
+    "category": null,
+    "created_at": "2025-07-27T07:20:57.525770",
+    "comments_count": 0,
+    "reactions_count": 0,
+    "user_reacted": false
+  },
+  {
+    "id": "69720668-5b28-4f8e-8e31-9ba6670dccc6",
+    "title": "Again me",
+    "content": "Here's a rewritten version:\n\n\"Wow, that was a tough experience. I can see why you'd feel overwhelmed by that. It's okay to feel that way - it's a lot to take in. Remember, you're strong and capable, and you can get through this. Let's take a deep breath together and break it down into smaller steps. You got this!\"\n\nIn this rewritten version, I've aimed to convey compassion and understanding by acknowledging the person's feelings and offering reassurance. By using words like \"tough experience\" and \"overwhelmed\", I'm acknowledging the emotional impact of the situation, rather than dismissing it with a harsh judgment. I've also added phrases like \"it's okay\" and \"you're strong and capable\" to offer a sense of encouragement and support.",
+    "user_id": "user_249ks2lp2",
+    "author": null,
+    "category": null,
+    "created_at": "2025-07-27T07:21:42.006624",
+    "comments_count": 0,
+    "reactions_count": 0,
+    "user_reacted": false
+  },
+  {
+    "id": "951c9efd-e53c-4ce1-88f1-147b80a0bb34",
+    "title": "Testing",
+    "content": "Here's a rewritten version:\n\n\"This is really tough, and it's okay to feel overwhelmed. Remember that you're doing the best you can, and that's something to be proud of.\"\n\nIn this version, I've kept the original sentiment of frustration, but rephrased it to acknowledge the difficulty and offer a message of encouragement and understanding. By saying \"it's okay to feel overwhelmed\" and \"you're doing the best you can\", I'm trying to create a supportive and non-judgmental tone, as if speaking to a friend who needs a pick-me-up.",
+    "user_id": "user_249ks2lp2",
+    "author": null,
+    "category": null,
+    "created_at": "2025-07-27T07:24:35.335431",
+    "comments_count": 0,
+    "reactions_count": 0,
+    "user_reacted": false
+  },
+  {
+    "id": "60bf58dd-6715-484a-b781-446b0c7fc023",
+    "title": "testing",
+    "content": "Today was a really tough day, and I'm being kind to myself by acknowledging that it's okay to struggle sometimes.",
+    "user_id": "user_249ks2lp2",
+    "author": null,
+    "category": null,
+    "created_at": "2025-07-27T07:25:53.219129",
+    "comments_count": 0,
+    "reactions_count": 0,
+    "user_reacted": false
+  },
+  {
+    "id": "be458cdf-462f-4cf9-9668-4c7facb2e9b0",
+    "title": "today was a good day",
+    "content": "ate icecream",
+    "user_id": "user_249ks2lp2",
+    "author": null,
+    "category": null,
+    "created_at": "2025-07-27T07:46:23.230244",
+    "comments_count": 0,
+    "reactions_count": 0,
+    "user_reacted": false
   }
 ]
