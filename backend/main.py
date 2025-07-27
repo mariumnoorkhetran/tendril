@@ -196,8 +196,15 @@ async def get_tasks(user_id: str):
 
 @app.post("/api/tasks", response_model=Task)
 async def create_task(task: Task):
+    # Validate that due date is required
+    if not task.due_date:
+        raise HTTPException(
+            status_code=400, 
+            detail="Due date is required. Please select a date from the calendar."
+        )
+    
     # Validate due date - should not be in the past
-    if task.due_date and task.due_date < date.today():
+    if task.due_date < date.today():
         raise HTTPException(
             status_code=400, 
             detail="Due date cannot be in the past. Please select today or a future date."
@@ -215,8 +222,15 @@ async def update_task(task_id: str, task: Task):
     if not any(t["id"] == task_id for t in data_manager.load_tasks(task.user_id)):
         raise HTTPException(status_code=404, detail="Task not found")
     
+    # Validate that due date is required
+    if not task.due_date:
+        raise HTTPException(
+            status_code=400, 
+            detail="Due date is required. Please select a date from the calendar."
+        )
+    
     # Validate due date - should not be in the past
-    if task.due_date and task.due_date < date.today():
+    if task.due_date < date.today():
         raise HTTPException(
             status_code=400, 
             detail="Due date cannot be in the past. Please select today or a future date."

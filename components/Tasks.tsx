@@ -30,6 +30,9 @@ export default function Tasks() {
   const dateInputRef = useRef<HTMLInputElement>(null);
   const [affirmation, setAffirmation] = useState<string | null>(null);
   const affirmationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [dateError, setDateError] = useState<string | null>(null);
+  const [titleError, setTitleError] = useState<string | null>(null);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
   useEffect(() => {
     loadTasks();
@@ -64,18 +67,28 @@ export default function Tasks() {
 
   const addTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTaskTitle.trim()) return;
+    setHasAttemptedSubmit(true);
+    if (!newTaskTitle.trim()) {
+      setTitleError('Task title cannot be empty.');
+      return;
+    }
+    if (!newTaskDueDate) {
+      setDateError('Please select a due date from the calendar above.');
+      return;
+    }
+
+    // Clear previous errors
+    setTitleError(null);
+    setDateError(null);
 
     // Validate due date - should not be in the past
-    if (newTaskDueDate) {
-      const selectedDate = new Date(newTaskDueDate + 'T00:00:00'); // Set to start of day
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
-      
-      if (selectedDate < today) {
-        alert('Due date cannot be in the past. Please select today or a future date.');
-        return;
-      }
+    const selectedDate = new Date(newTaskDueDate + 'T00:00:00'); // Set to start of day
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+    
+    if (selectedDate < today) {
+      setDateError('Due date cannot be in the past. Please select today or a future date.');
+      return;
     }
 
     try {
@@ -83,14 +96,24 @@ export default function Tasks() {
         title: newTaskTitle,
         description: newTaskDescription || undefined,
         completed: false,
-        due_date: newTaskDueDate || undefined,
+        due_date: newTaskDueDate,
       });
       setTasks([...tasks, newTask]);
       setNewTaskTitle('');
       setNewTaskDescription('');
       setNewTaskDueDate('');
-    } catch (error) {
+      setTitleError(null);
+      setDateError(null);
+      setHasAttemptedSubmit(false);
+    } catch (error: any) {
       console.error('Failed to create task:', error);
+      if (error.message?.includes('Due date is required')) {
+        setDateError('Please select a due date from the calendar above.');
+      } else if (error.message?.includes('cannot be in the past')) {
+        setDateError('Due date cannot be in the past. Please select today or a future date.');
+      } else {
+        setDateError('Failed to create task. Please try again.');
+      }
     }
   };
 
@@ -110,34 +133,61 @@ export default function Tasks() {
 
   const updateTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingTaskId || !editTaskTitle.trim()) return;
+    setHasAttemptedSubmit(true);
+    if (!editTaskTitle.trim()) {
+      setTitleError('Task title cannot be empty.');
+      return;
+    }
+    if (!editingTaskId) return;
+
+    // Clear previous errors
+    setTitleError(null);
+    setDateError(null);
+
+    // Validate that due date is required
+    if (!editTaskDueDate) {
+      setDateError('Please select a due date from the calendar.');
+      return;
+    }
 
     // Validate due date - should not be in the past
-    if (editTaskDueDate) {
-      const selectedDate = new Date(editTaskDueDate + 'T00:00:00');
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      if (selectedDate < today) {
-        alert('Due date cannot be in the past. Please select today or a future date.');
-        return;
-      }
+    const selectedDate = new Date(editTaskDueDate + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < today) {
+      setDateError('Due date cannot be in the past. Please select today or a future date.');
+      return;
     }
 
     try {
       const updatedTask = await api.updateTask(editingTaskId, {
-        id: editingTaskId,
         title: editTaskTitle,
         description: editTaskDescription || undefined,
-        completed: tasks.find(t => t.id === editingTaskId)?.completed || false,
-        due_date: editTaskDueDate || undefined,
-        completion_history: tasks.find(t => t.id === editingTaskId)?.completion_history || {},
+        completed: false,
+        due_date: editTaskDueDate,
       });
       
-      setTasks(tasks.map(t => t.id === editingTaskId ? updatedTask : t));
-      cancelEditing();
-    } catch (error) {
+      setTasks(tasks.map(task => 
+        task.id === editingTaskId ? updatedTask : task
+      ));
+      
+      setEditingTaskId(null);
+      setEditTaskTitle('');
+      setEditTaskDescription('');
+      setEditTaskDueDate('');
+      setTitleError(null);
+      setDateError(null);
+      setHasAttemptedSubmit(false);
+    } catch (error: any) {
       console.error('Failed to update task:', error);
+      if (error.message?.includes('Due date is required')) {
+        setDateError('Please select a due date from the calendar.');
+      } else if (error.message?.includes('cannot be in the past')) {
+        setDateError('Due date cannot be in the past. Please select today or a future date.');
+      } else {
+        setDateError('Failed to update task. Please try again.');
+      }
     }
   };
 
@@ -227,18 +277,39 @@ export default function Tasks() {
         </h2>
         <form onSubmit={addTask} className="space-y-4">
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Task Title <span className="text-red-500">*</span> (Required)
+            </label>
             <input
               type="text"
-              placeholder="Task title"
+              placeholder="Enter task title"
               value={newTaskTitle}
-              onChange={(e) => setNewTaskTitle(e.target.value)}
-              className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
-              required
+              onChange={(e) => {
+                setNewTaskTitle(e.target.value);
+                setTitleError(null); // Clear error when user types
+              }}
+              className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 ${
+                titleError && hasAttemptedSubmit ? 'border-red-500 bg-red-50' : 'border-gray-600'
+              }`}
             />
+            {titleError && hasAttemptedSubmit && (
+              <p className="text-red-500 text-sm mt-1 flex items-center">
+                <span className="mr-1">⚠️</span>
+                {titleError}
+              </p>
+            )}
+            {!titleError && !newTaskTitle && hasAttemptedSubmit && (
+              <p className="text-gray-500 text-sm mt-1">
+                ✏️ Please enter a task title
+              </p>
+            )}
           </div>
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Task Description (optional)
+            </label>
             <textarea
-              placeholder="Task description (optional)"
+              placeholder="Enter task description"
               value={newTaskDescription}
               onChange={(e) => setNewTaskDescription(e.target.value)}
               className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
@@ -248,16 +319,32 @@ export default function Tasks() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Due Date (Today or Future)
+                Due Date <span className="text-red-500">*</span> (Required)
               </label>
               <input
                 type="date"
                 value={newTaskDueDate}
-                onChange={(e) => setNewTaskDueDate(e.target.value)}
-                className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                onChange={(e) => {
+                  setNewTaskDueDate(e.target.value);
+                  setDateError(null); // Clear error when user selects a date
+                }}
+                className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 ${
+                  dateError && hasAttemptedSubmit ? 'border-red-500 bg-red-50' : 'border-gray-600'
+                }`}
                 min={getTodayDateString()}
                 ref={dateInputRef}
               />
+              {dateError && hasAttemptedSubmit && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <span className="mr-1">⚠️</span>
+                  {dateError}
+                </p>
+              )}
+              {!dateError && !newTaskDueDate && hasAttemptedSubmit && (
+                <p className="text-gray-500 text-sm mt-1">
+                  📅 Please select a date from the calendar above
+                </p>
+              )}
             </div>
             <div className="flex items-end">
               <Button type="submit" className="bg-[#af5f5f] hover:bg-[#af5f5f]/90 w-full">
@@ -287,18 +374,39 @@ export default function Tasks() {
                     // Edit Form
                     <form onSubmit={updateTask} className="space-y-3">
                       <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Task Title <span className="text-red-500">*</span> (Required)
+                        </label>
                         <input
                           type="text"
-                          placeholder="Task title"
+                          placeholder="Enter task title"
                           value={editTaskTitle}
-                          onChange={(e) => setEditTaskTitle(e.target.value)}
-                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
-                          required
+                          onChange={(e) => {
+                            setEditTaskTitle(e.target.value);
+                            setTitleError(null); // Clear error when user types
+                          }}
+                          className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 ${
+                            titleError && hasAttemptedSubmit ? 'border-red-500 bg-red-50' : 'border-gray-600'
+                          }`}
                         />
+                        {titleError && hasAttemptedSubmit && (
+                          <p className="text-red-500 text-sm mt-1 flex items-center">
+                            <span className="mr-1">⚠️</span>
+                            {titleError}
+                          </p>
+                        )}
+                        {!titleError && !editTaskTitle && hasAttemptedSubmit && (
+                          <p className="text-gray-500 text-sm mt-1">
+                            ✏️ Please enter a task title
+                          </p>
+                        )}
                       </div>
                       <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Task Description (optional)
+                        </label>
                         <textarea
-                          placeholder="Task description (optional)"
+                          placeholder="Enter task description"
                           value={editTaskDescription}
                           onChange={(e) => setEditTaskDescription(e.target.value)}
                           className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
@@ -307,15 +415,31 @@ export default function Tasks() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Due Date (Today or Future)
+                          Due Date <span className="text-red-500">*</span> (Required)
                         </label>
                         <input
                           type="date"
                           value={editTaskDueDate}
-                          onChange={(e) => setEditTaskDueDate(e.target.value)}
-                          className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
+                          onChange={(e) => {
+                            setEditTaskDueDate(e.target.value);
+                            setDateError(null); // Clear error when user selects a date
+                          }}
+                          className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500 ${
+                            dateError && hasAttemptedSubmit ? 'border-red-500 bg-red-50' : 'border-gray-600'
+                          }`}
                           min={getTodayDateString()}
                         />
+                        {dateError && hasAttemptedSubmit && (
+                          <p className="text-red-500 text-sm mt-1 flex items-center">
+                            <span className="mr-1">⚠️</span>
+                            {dateError}
+                          </p>
+                        )}
+                        {!dateError && !editTaskDueDate && hasAttemptedSubmit && (
+                          <p className="text-gray-500 text-sm mt-1">
+                            📅 Please select a date from the calendar above
+                          </p>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <Button type="submit" className="bg-[#af5f5f] hover:bg-[#af5f5f]/90">
@@ -397,12 +521,14 @@ export default function Tasks() {
                           value={editTaskTitle}
                           onChange={(e) => setEditTaskTitle(e.target.value)}
                           className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"
-                          required
                         />
                       </div>
                       <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Task Description (optional)
+                        </label>
                         <textarea
-                          placeholder="Task description (optional)"
+                          placeholder="Enter task description"
                           value={editTaskDescription}
                           onChange={(e) => setEditTaskDescription(e.target.value)}
                           className="w-full p-2 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-500"

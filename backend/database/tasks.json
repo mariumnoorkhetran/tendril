@@ -93,5 +93,23 @@
     "due_date": "2025-07-27",
     "completion_history": {},
     "user_id": "user_249ks2lp2"
+  },
+  {
+    "id": "d555adb7-1a80-4bc9-8912-153fbbac18ee",
+    "title": "Dusting",
+    "description": null,
+    "completed": false,
+    "due_date": "2025-07-30",
+    "completion_history": {},
+    "user_id": "user_249ks2lp2"
+  },
+  {
+    "id": "edcc84b4-a7c2-4734-aaea-67ebbad96563",
+    "title": "Watering Plants",
+    "description": null,
+    "completed": false,
+    "due_date": "2025-07-31",
+    "completion_history": {},
+    "user_id": "user_249ks2lp2"
   }
 ]
