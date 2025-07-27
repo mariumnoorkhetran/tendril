@@ -1,4 +1,8 @@
 from datetime import date
+import sys
+import os
+# add backend directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data.streak_manager import StreakManager
 
 # Create a simple test data manager
