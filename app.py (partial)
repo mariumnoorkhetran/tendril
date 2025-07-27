@@ -1,0 +1,27 @@
+from flask import Flask, request, jsonify
+from models import User, Task
+from database import SessionLocal, engine, Base
+from datetime import date
+
+Base.metadata.create_all(bind=engine)
+
+app = Flask(__name__)
+
+@app.route("/user/<username>", methods=["GET"])
+def get_user(username):
+    db = SessionLocal()
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        user = User(username=username)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    db.close()
+    return jsonify({
+        "username": user.username,
+        "last_completed_date": user.last_completed_date,
+        "streak": user.streak,
+        "paused": user.paused
+    })
+
+# Add other endpoints (tasks, streaks, etc.) similarly...
